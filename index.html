@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="th" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1565c0">
+<meta name="description" content="แอปอ่านแบบก่อสร้าง 2D / 3D / 4D ใช้งานออฟไลน์">
+<title>อ่านแบบ 2D·3D·4D</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header id="top">
+  <div class="brand">📐 <b data-en="Plan Reader">อ่านแบบ</b> <span>2D·3D·4D</span></div>
+  <nav id="modes">
+    <button data-mode="2d" class="active">2D</button>
+    <button data-mode="3d">3D</button>
+    <button data-mode="4d">4D</button>
+    <button data-mode="boq" data-en="BOQ">ถอดปริมาณ</button>
+  </nav>
+  <div class="actions">
+    <button id="btnFile">📂 <span data-en="File">ไฟล์</span></button>
+    <button id="btnPrint" class="print-btn" title="พิมพ์ / Print">🖨️ <span data-en="Print">พิมพ์</span></button>
+    <button id="btnUndo" title="เลิกทำ (Ctrl+Z)">↶</button>
+    <button id="btnRedo" title="ทำซ้ำ (Ctrl+Y)">↷</button>
+    <select id="levelSel" title="ชั้น / Level"></select>
+    <button id="btnTheme" title="ธีมมืด/สว่าง">🌓</button>
+    <button id="btnLang" title="ภาษา / Language">EN</button>
+    <button id="btnHelp" title="วิธีใช้">❓</button>
+    <button id="btnPanel" class="mobile-only" title="แผงตั้งค่า">☰</button>
+  </div>
+</header>
+<div id="fileMenu" class="menu hidden">
+  <label class="mi">📷 <span data-en="Take photo of drawing">ถ่ายรูปแบบ (กล้อง)</span><input type="file" accept="image/*" capture="environment" id="inCamera" hidden></label>
+  <label class="mi">🖼️ <span data-en="Pick from photo gallery">เลือกรูปจากคลังภาพ</span><input type="file" accept="image/*" id="inGallery" hidden></label>
+  <label class="mi">🗂️ <span data-en="Open image file (JPG/PNG)">เปิดไฟล์รูปภาพ (JPG/PNG)</span><input type="file" accept="image/*,.jpg,.jpeg,.png" id="inImage" hidden></label>
+  <label class="mi">📄 <span data-en="Open PDF">เปิดไฟล์ PDF</span><input type="file" accept="application/pdf,.pdf" id="inPdf" hidden></label>
+  <label class="mi">📐 <span data-en="Open DXF (CAD)">เปิดไฟล์ DXF (CAD)</span><input type="file" accept=".dxf,image/vnd.dxf,application/dxf" id="inDxf" hidden></label>
+  <label class="mi">🏗️ <span data-en="Open IFC (BIM)">เปิดไฟล์ IFC (BIM)</span><input type="file" accept=".ifc" id="inIfc" hidden></label>
+  <hr>
+  <button class="mi" id="miNew">🆕 <span data-en="New project">โปรเจกต์ใหม่</span></button>
+  <button class="mi" id="miSave">💾 <span data-en="Save in this device">บันทึกในเครื่อง</span></button>
+  <button class="mi" id="miOpen">📁 <span data-en="Open saved project">เปิดโปรเจกต์ที่บันทึกไว้</span></button>
+  <button class="mi" id="miExport">⬇️ <span data-en="Export project file (.json)">ส่งออกไฟล์โปรเจกต์ (.json)</span></button>
+  <label class="mi">⬆️ <span data-en="Import project file (.json)">นำเข้าไฟล์โปรเจกต์ (.json)</span><input type="file" accept=".json,application/json" id="inJson" hidden></label>
+  <button class="mi" id="miSample">🧪 <span data-en="Load sample plan">โหลดแบบตัวอย่าง</span></button>
+  <hr>
+  <button class="mi" id="miBackup">🛟 <span data-en="Backup all data">สำรองข้อมูลทั้งหมด</span></button>
+  <label class="mi">♻️ <span data-en="Restore from backup">กู้คืนจากไฟล์สำรอง</span><input type="file" accept=".json,.dabackup,application/json" id="inBackup" hidden></label>
+  <button class="mi" id="miPin">🔒 <span data-en="Set / change PIN">ตั้ง/เปลี่ยนรหัส PIN</span></button>
+  <button class="mi" id="miLock">🔐 <span data-en="Lock app now">ล็อกแอปตอนนี้</span></button>
+</div>
+<main>
+  <aside id="tools"></aside>
+  <section id="view">
+    <div id="v2d"><canvas id="c2d"></canvas></div>
+    <div id="v3d" class="hidden"></div>
+    <div id="walkPad" class="hidden">
+      <span></span><button data-walk="1,0">▲</button><span></span>
+      <button data-walk="0,-1">◀</button><button data-walk="-1,0">▼</button><button data-walk="0,1">▶</button>
+    </div>
+    <div id="boq" class="hidden"></div>
+    <div id="welcome" class="welcome">
+      <div class="card">
+        <h2 style="margin-top:0" data-en="Start reading a drawing">เริ่มอ่านแบบ</h2>
+        <p class="small" data-en="Take a photo or open an image, PDF or DXF file. Everything works offline.">ถ่ายรูปแบบ หรือเปิดไฟล์รูปภาพ / PDF / DXF — ทำงานออฟไลน์ทั้งหมด ข้อมูลไม่ออกจากเครื่อง</p>
+        <div class="bigbtns">
+          <button class="big primary" id="wCamera"><span class="ic">📷</span><span data-en="Take photo of drawing">ถ่ายรูปแบบ</span></button>
+          <button class="big" id="wGallery"><span class="ic">🖼️</span><span data-en="Pick from photo gallery">เลือกรูปจากคลังภาพ</span></button>
+          <button class="big" id="wOpen"><span class="ic">📂</span><span data-en="Open drawing file (PDF/DXF/image)">เปิดไฟล์แบบ</span></button>
+          <button class="big" id="wSample"><span class="ic">🧪</span><span data-en="Try sample plan">ลองแบบตัวอย่าง</span></button>
+        </div>
+      </div>
+    </div>
+    <div id="hint"></div>
+    <div id="dropHint" data-en="Drop file here">วางไฟล์ที่นี่</div>
+  </section>
+  <aside id="panel"></aside>
+</main>
+<section id="timeline" class="hidden">
+  <div class="tl-ctrl">
+    <button id="tlPlay" title="เล่น / Play">▶</button>
+    <input type="range" id="tlSlider" min="0" max="1" value="0" step="1">
+    <span id="tlDate"></span>
+    <select id="tlSpeed" title="ความเร็ว"><option value="1">1 วัน/เฟรม</option><option value="3" selected>3 วัน/เฟรม</option><option value="7">7 วัน/เฟรม</option></select>
+    <span class="legend"><span><i style="background:#43a047"></i><b data-en="Done">เสร็จแล้ว</b></span><span><i style="background:#fb8c00"></i><b data-en="In progress">กำลังทำ</b></span><span><i style="background:#90a4ae"></i><b data-en="Not started">ยังไม่เริ่ม</b></span></span>
+    <span id="tlStats" class="small"></span>
+  </div>
+  <div id="gantt"></div>
+</section>
+<footer id="status"><span id="stCoords"></span><span id="stScale"></span><span id="stInfo"></span><span id="stOffline"></span></footer>
+<div id="modal" class="hidden"><div class="box"><div class="mhead"><b id="mTitle"></b><button id="mClose">✕</button></div><div id="mBody"></div></div></div>
+<div id="toast"></div>
+<div id="printArea"></div>
+<input type="file" id="inAny" accept="image/*,.jpg,.jpeg,.png,.pdf,application/pdf,.dxf,.dwg,.ifc,.json,application/json" hidden>
+<script>window.PDF_WORKER_SRC='vendor/pdf.worker.min.js';</script>
+<script src="app.js"></script>
+<script>if('serviceWorker' in navigator && (location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1')){navigator.serviceWorker.register('sw.js').catch(function(e){console.warn('SW',e)});}</script>
+</body>
+</html>
