@@ -22,6 +22,7 @@
     <button data-mode="boq" data-en="BOQ">ถอดปริมาณ</button>
   </nav>
   <div class="actions">
+    <button id="btnNewJob" class="newjob-btn" title="เริ่มงานใหม่ / New job">🆕 <span data-en="New job">เริ่มงานใหม่</span></button>
     <button id="btnFile">📂 <span data-en="File">ไฟล์</span></button>
     <button id="btnPrint" class="print-btn" title="พิมพ์ / Print">🖨️ <span data-en="Print">พิมพ์</span></button>
     <button id="btnUndo" title="เลิกทำ (Ctrl+Z)">↶</button>
@@ -41,7 +42,7 @@
   <label class="mi">📐 <span data-en="Open DXF (CAD)">เปิดไฟล์ DXF (CAD)</span><input type="file" accept=".dxf,image/vnd.dxf,application/dxf" id="inDxf" hidden></label>
   <label class="mi">🏗️ <span data-en="Open IFC (BIM)">เปิดไฟล์ IFC (BIM)</span><input type="file" accept=".ifc" id="inIfc" hidden></label>
   <hr>
-  <button class="mi" id="miNew">🆕 <span data-en="New project">โปรเจกต์ใหม่</span></button>
+  <button class="mi" id="miNew">🆕 <span data-en="New job (clear current work)">เริ่มงานใหม่ (ล้างงานที่กำลังตรวจ)</span></button>
   <button class="mi" id="miSave">💾 <span data-en="Save in this device">บันทึกในเครื่อง</span></button>
   <button class="mi" id="miOpen">📁 <span data-en="Open saved project">เปิดโปรเจกต์ที่บันทึกไว้</span></button>
   <button class="mi" id="miExport">⬇️ <span data-en="Export project file (.json)">ส่งออกไฟล์โปรเจกต์ (.json)</span></button>
@@ -52,6 +53,8 @@
   <label class="mi">♻️ <span data-en="Restore from backup">กู้คืนจากไฟล์สำรอง</span><input type="file" accept=".json,.dabackup,application/json" id="inBackup" hidden></label>
   <button class="mi" id="miPin">🔒 <span data-en="Set / change PIN">ตั้ง/เปลี่ยนรหัส PIN</span></button>
   <button class="mi" id="miLock">🔐 <span data-en="Lock app now">ล็อกแอปตอนนี้</span></button>
+  <hr><div class="mi-h">⚙️ <span data-en="Settings">ตั้งค่า</span></div>
+  <button class="mi danger" id="miWipe">🧹 <span data-en="Erase all data on this device">ล้างข้อมูลทั้งหมดในเครื่อง</span></button>
 </div>
 <main>
   <aside id="tools"></aside>
