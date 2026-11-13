@@ -25,6 +25,7 @@
     <button id="btnNewJob" class="newjob-btn" title="เริ่มงานใหม่ / New job">🆕 <span data-en="New job">เริ่มงานใหม่</span></button>
     <button id="btnWorkType" class="wt-btn" title="เลือกประเภทงาน / Work type">🏗️ <span class="wt-lbl" data-en="Work type">เลือกประเภทงาน</span> <b id="wtChip" class="wt-chip"></b></button>
     <button id="btnFile">📂 <span data-en="File">ไฟล์</span></button>
+    <button id="btnLearn" class="learn-btn" title="โหมดเรียนรู้ / Learning mode">🎓 <span data-en="Learn">โหมดเรียนรู้</span></button>
     <button id="btnPrint" class="print-btn" title="พิมพ์ / Print">🖨️ <span data-en="Print">พิมพ์</span></button>
     <button id="btnUndo" title="เลิกทำ (Ctrl+Z)">↶</button>
     <button id="btnRedo" title="ทำซ้ำ (Ctrl+Y)">↷</button>
@@ -38,7 +39,8 @@
 <div id="stepBar" class="stepbar">
   <button id="stp1" class="stp"><b>1</b> <span data-en="Open drawing">เปิดแบบ</span></button><i class="stp-ar">→</i>
   <button id="btnTo3d" class="stp cv-btn"><b>2</b> 🧊 <span data-en="Convert 2D → 3D">แปลง 2D → 3D</span></button><i class="stp-ar">→</i>
-  <button id="btnTo4d" class="stp cv-btn cv4"><b>3</b> 📅 <span data-en="Convert 3D → 4D">แปลง 3D → 4D</span></button>
+  <button id="btnTo4d" class="stp cv-btn cv4"><b>3</b> 📅 <span data-en="Convert 3D → 4D">แปลง 3D → 4D</span></button><i class="stp-ar">→</i>
+  <button id="btnAsm" class="stp cv-btn cv-asm"><b>4</b> 🧩 <span data-en="Assemble model">ประกอบแบบเป็นโมเดล</span></button>
   <span id="stpHint" class="small"></span>
 </div>
 <div id="fileMenu" class="menu hidden">
@@ -73,6 +75,8 @@
       <button data-walk="0,-1">◀</button><button data-walk="-1,0">▼</button><button data-walk="0,1">▶</button>
     </div>
     <div id="boq" class="hidden"></div>
+    <button id="asmFab" class="asm-fab hidden">🧩 <span data-en="Assemble model">ประกอบแบบเป็นโมเดล</span> <b id="asmFabN"></b></button>
+    <div id="asmBar" class="asm-bar hidden"><span id="asmBarTxt"></span><button data-asmv="3d">🧊 3D</button><button data-asmv="4d">📅 4D</button><button data-asmv="tiles">🗂️ <span data-en="Sheets">แบบทั้งหมด</span></button></div>
     <div id="welcome" class="welcome">
       <div class="card">
         <h2 style="margin-top:0" data-en="Start reading a drawing">เริ่มอ่านแบบ</h2>
@@ -107,6 +111,8 @@
 <div id="modal" class="hidden"><div class="box"><div class="mhead"><b id="mTitle"></b><button id="mClose">✕</button></div><div id="mBody"></div></div></div>
 <div id="toast"></div>
 <div id="printArea"></div>
+<input type="file" id="inMulti" multiple accept="image/*,.jpg,.jpeg,.png,.pdf,application/pdf,.dxf" hidden>
+<input type="file" id="inMultiCam" accept="image/*" capture="environment" hidden>
 <input type="file" id="inAny" accept="image/*,.jpg,.jpeg,.png,.pdf,application/pdf,.dxf,.dwg,.ifc,.json,application/json" hidden>
 <script>window.PDF_WORKER_SRC='vendor/pdf.worker.min.js';</script>
 <script src="app.js"></script>
