@@ -35,6 +35,12 @@
     <button id="btnPanel" class="mobile-only" title="แผงตั้งค่า">☰</button>
   </div>
 </header>
+<div id="stepBar" class="stepbar">
+  <button id="stp1" class="stp"><b>1</b> <span data-en="Open drawing">เปิดแบบ</span></button><i class="stp-ar">→</i>
+  <button id="btnTo3d" class="stp cv-btn"><b>2</b> 🧊 <span data-en="Convert 2D → 3D">แปลง 2D → 3D</span></button><i class="stp-ar">→</i>
+  <button id="btnTo4d" class="stp cv-btn cv4"><b>3</b> 📅 <span data-en="Convert 3D → 4D">แปลง 3D → 4D</span></button>
+  <span id="stpHint" class="small"></span>
+</div>
 <div id="fileMenu" class="menu hidden">
   <label class="mi">📷 <span data-en="Take photo of drawing">ถ่ายรูปแบบ (กล้อง)</span><input type="file" accept="image/*" capture="environment" id="inCamera" hidden></label>
   <label class="mi">🖼️ <span data-en="Pick from photo gallery">เลือกรูปจากคลังภาพ</span><input type="file" accept="image/*" id="inGallery" hidden></label>
@@ -80,6 +86,7 @@
         </div>
       </div>
     </div>
+    <div id="cvFloat" class="cv-float hidden"><button id="cvBig" class="cv-big"></button><div id="cvBadge" class="cv-badge hidden"></div></div>
     <div id="hint"></div>
     <div id="dropHint" data-en="Drop file here">วางไฟล์ที่นี่</div>
   </section>

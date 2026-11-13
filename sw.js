@@ -1,5 +1,5 @@
 // Offline service worker - cache-first for all app assets
-const CACHE = 'drawing-app-59f1a86017';
+const CACHE = 'drawing-app-8930dee336';
 const ASSETS = ["./","app.css","app.js","icons/icon-192.png","icons/icon-512.png","icons/icon-maskable-512.png","index.html","manifest.json","vendor/heavy/eng.traineddata.gz","vendor/heavy/tesseract-core-lstm.wasm.js","vendor/heavy/tesseract-core-simd-lstm.wasm.js","vendor/heavy/tesseract-worker.min.js","vendor/heavy/tha.traineddata.gz","vendor/heavy/web-ifc-api.min.js","vendor/heavy/web-ifc.wasm","vendor/pdf.worker.min.js"];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE && k.startsWith('drawing-app-')).map((k) => caches.delete(k)))).then(() => self.clients.claim())); });
