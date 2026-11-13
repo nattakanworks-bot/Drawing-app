@@ -23,6 +23,7 @@
   </nav>
   <div class="actions">
     <button id="btnNewJob" class="newjob-btn" title="เริ่มงานใหม่ / New job">🆕 <span data-en="New job">เริ่มงานใหม่</span></button>
+    <button id="btnWorkType" class="wt-btn" title="เลือกประเภทงาน / Work type">🏗️ <span class="wt-lbl" data-en="Work type">เลือกประเภทงาน</span> <b id="wtChip" class="wt-chip"></b></button>
     <button id="btnFile">📂 <span data-en="File">ไฟล์</span></button>
     <button id="btnPrint" class="print-btn" title="พิมพ์ / Print">🖨️ <span data-en="Print">พิมพ์</span></button>
     <button id="btnUndo" title="เลิกทำ (Ctrl+Z)">↶</button>
@@ -74,6 +75,7 @@
           <button class="big primary" id="wCamera"><span class="ic">📷</span><span data-en="Take photo of drawing">ถ่ายรูปแบบ</span></button>
           <button class="big" id="wGallery"><span class="ic">🖼️</span><span data-en="Pick from photo gallery">เลือกรูปจากคลังภาพ</span></button>
           <button class="big" id="wOpen"><span class="ic">📂</span><span data-en="Open drawing file (PDF/DXF/image)">เปิดไฟล์แบบ</span></button>
+          <button class="big wt-big" id="wWorkType"><span class="ic">🏗️</span><span data-en="Choose work type (piping, petroleum…)">เลือกประเภทงาน (ท่อ ปิโตรเลียม ฯลฯ)</span></button>
           <button class="big" id="wSample"><span class="ic">🧪</span><span data-en="Try sample plan">ลองแบบตัวอย่าง</span></button>
         </div>
       </div>
@@ -89,7 +91,7 @@
     <input type="range" id="tlSlider" min="0" max="1" value="0" step="1">
     <span id="tlDate"></span>
     <select id="tlSpeed" title="ความเร็ว"><option value="1">1 วัน/เฟรม</option><option value="3" selected>3 วัน/เฟรม</option><option value="7">7 วัน/เฟรม</option></select>
-    <span class="legend"><span><i style="background:#43a047"></i><b data-en="Done">เสร็จแล้ว</b></span><span><i style="background:#fb8c00"></i><b data-en="In progress">กำลังทำ</b></span><span><i style="background:#90a4ae"></i><b data-en="Not started">ยังไม่เริ่ม</b></span></span>
+    <span class="legend"><span><i style="background:#43a047"></i><b data-en="Done">เสร็จแล้ว</b></span><span><i style="background:#fb8c00"></i><b data-en="In progress">กำลังทำ</b></span><span><i style="background:#90a4ae"></i><b data-en="Not started">ยังไม่เริ่ม</b></span><span><i style="background:#1e88e5"></i><b data-en="Testing">กำลังทดสอบ</b></span></span>
     <span id="tlStats" class="small"></span>
   </div>
   <div id="gantt"></div>
