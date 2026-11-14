@@ -3,6 +3,7 @@
   "short_name": "อ่านแบบ",
   "description": "อ่านแบบก่อสร้าง 2D แปลงเป็น 3D และ 4D ใช้งานออฟไลน์",
   "lang": "th",
+  "id": "./",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
@@ -10,6 +11,11 @@
   "background_color": "#f4f6f9",
   "theme_color": "#1565c0",
   "icons": [
+    {
+      "src": "icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
     {
       "src": "icons/icon-192.png",
       "sizes": "192x192",
