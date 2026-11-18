@@ -1,6 +1,6 @@
 // Offline service worker — precaches EVERY app asset on install (OCR engine, Thai/English data, IFC engine, PDF worker, viewer, samples)
 // so all features work offline even if they were never used online. Paths are relative to this file (works under /Drawing-app/).
-const VER = 'c0ab572104';
+const VER = 'bcdf93b887';
 const CACHE = 'drawing-app-' + VER;
 const ASSETS = ["./","app.css","app.js","icons/apple-touch-icon.png","icons/icon-192.png","icons/icon-512.png","icons/icon-maskable-512.png","index.html","manifest.json","vendor/heavy/eng.traineddata.gz","vendor/heavy/smp-arch-plan.png","vendor/heavy/smp-elec-plan.png","vendor/heavy/smp-iso.png","vendor/heavy/smp-pid.png","vendor/heavy/smp-section.png","vendor/heavy/smp-sld.png","vendor/heavy/smp-struct-plan.png","vendor/heavy/smp-user-welding-map-iso-sht2.png","vendor/heavy/smp-user-welding-map-iso.png","vendor/heavy/tesseract-core-lstm.wasm.js","vendor/heavy/tesseract-core-simd-lstm.wasm.js","vendor/heavy/tesseract-worker.min.js","vendor/heavy/tha.traineddata.gz","vendor/heavy/web-ifc-api.min.js","vendor/heavy/web-ifc.wasm","vendor/pdf.worker.min.js","vendor/viewer.min.js"];
 const abs = (a) => new URL(a, self.location.href).href;
