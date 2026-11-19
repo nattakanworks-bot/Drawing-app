@@ -14,6 +14,30 @@
 <meta name="apple-mobile-web-app-title" content="อ่านแบบ">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="stylesheet" href="app.css">
+<style>
+  #featBar {
+    display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 10px;
+    background: #f5f7fa; border-bottom: 1px solid #dde3ea;
+    font-size: 12px; align-items: center;
+  }
+  #featBar .fb {
+    border: 1px solid #c5d0dc; background: #fff; border-radius: 8px;
+    padding: 4px 8px; cursor: pointer; white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  #featBar .fb:hover { background: #eef3f9; }
+  #featBar .fb.on { background: #1565c0; color: #fff; border-color: #1565c0; }
+  #featBar .fb .ab { opacity: .75; font-size: 10px; font-weight: 600; }
+  #featBar .fb.on .ab { opacity: 1; }
+  #featBar .fb.ready { border-color: #2e7d32; }
+  #featBar .fb.ready.on { background: #2e7d32; border-color: #2e7d32; }
+  #featBar .fb.soon { opacity: .85; }
+  #featToast {
+    position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+    background: #1c1917; color: #fff; padding: 10px 16px; border-radius: 10px;
+    z-index: 9999; font-size: 13px; max-width: 90vw; display: none;
+  }
+</style>
 </head>
 <body>
 <header id="top">
@@ -41,6 +65,21 @@
     <button id="btnPanel" class="mobile-only" title="แผงตั้งค่า">☰</button>
   </div>
 </header>
+
+<!-- แถบฟีเจอร์ทั้ง 10 ข้อ: ชื่อไทย + ตัวย่ออังกฤษ -->
+<div id="featBar" role="toolbar" aria-label="ฟีเจอร์เพิ่มเติม">
+  <button type="button" class="fb soon" data-feat="dwg" title="เปิดไฟล์ DWG โดยตรง">📄 DWG <span class="ab">DWG</span></button>
+  <button type="button" class="fb soon" data-feat="ocr" title="OCR ภาษาไทยและอังกฤษ">🔤 OCR ไทย <span class="ab">OCR</span></button>
+  <button type="button" class="fb soon" data-feat="check" title="ตรวจอัตโนมัติ / Clash">✅ ตรวจอัตโนมัติ <span class="ab">Check</span></button>
+  <button type="button" class="fb ready" data-feat="glb" title="ส่งออกโมเดล 3D เป็น GLB/OBJ">🧊 ส่งออก 3D <span class="ab">GLB</span></button>
+  <button type="button" class="fb soon" data-feat="ar" title="โหมด AR">📱 โหมด AR <span class="ab">AR</span></button>
+  <button type="button" class="fb ready" data-feat="diff" title="เปรียบเทียบแบบเก่า-ใหม่">🔄 เปรียบเทียบ <span class="ab">Diff</span></button>
+  <button type="button" class="fb soon" data-feat="layer" title="จัดการ Layer / Block">📚 เลเยอร์ <span class="ab">Layer</span></button>
+  <button type="button" class="fb soon" data-feat="symbol" title="คลังสัญลักษณ์ส่วนตัว">🔣 คลังสัญลักษณ์ <span class="ab">Symbol</span></button>
+  <button type="button" class="fb soon" data-feat="cloud" title="ซิงค์และแชร์โปรเจกต์">☁️ ซิงค์คลาวด์ <span class="ab">Cloud</span></button>
+  <button type="button" class="fb soon" data-feat="perf" title="โหมดประสิทธิภาพแบบใหญ่">⚡ ประสิทธิภาพ <span class="ab">Perf</span></button>
+</div>
+
 <div id="stepBar" class="stepbar">
   <button id="stp1" class="stp"><b>1</b> <span data-en="Open drawing">เปิดแบบ</span></button><i class="stp-ar">→</i>
   <button id="btnTo3d" class="stp cv-btn"><b>2</b> 🧊 <span data-en="Convert 2D → 3D">แปลง 2D → 3D</span></button><i class="stp-ar">→</i>
@@ -119,11 +158,63 @@
 <footer id="status"><span id="stCoords"></span><span id="stScale"></span><span id="stInfo"></span><span id="stOffline"></span></footer>
 <div id="modal" class="hidden"><div class="box"><div class="mhead"><b id="mTitle"></b><button id="mClose">✕</button></div><div id="mBody"></div></div></div>
 <div id="toast"></div>
+<div id="featToast"></div>
 <div id="printArea"></div>
 <input type="file" id="inMulti" multiple accept="image/*,.jpg,.jpeg,.png,.pdf,application/pdf,.dxf" hidden>
 <input type="file" id="inMultiCam" accept="image/*" capture="environment" hidden>
 <input type="file" id="inAny" accept="image/*,.jpg,.jpeg,.png,.pdf,application/pdf,.dxf,.dwg,.ifc,.json,.dwgapp,application/json" hidden>
 <script>window.PDF_WORKER_SRC='vendor/pdf.worker.min.js';window.SW_URL='sw.js';</script>
 <script src="app.js"></script>
+<script>
+(function () {
+  var msgs = {
+    dwg: 'DWG: ยังต้องแปลงเป็น DXF ก่อน (ฟีเจอร์เต็มรูปแบบอยู่ระหว่างพัฒนา)',
+    ocr: 'OCR ไทย/อังกฤษ: มีพื้นฐานแล้ว กำลังปรับปรุงความแม่นยำ',
+    check: 'ตรวจอัตโนมัติ (Check): มีบางส่วนในโค้ด กำลังทำให้เสถียร',
+    glb: 'ส่งออก 3D (GLB): กำลังเรียกฟังก์ชันส่งออก…',
+    ar: 'โหมด AR: มีฟังก์ชันเริ่มต้น ยังไม่สมบูรณ์',
+    diff: 'เปรียบเทียบแบบ (Diff): กำลังเรียกฟังก์ชันเปรียบเทียบ…',
+    layer: 'เลเยอร์ (Layer): มีพื้นฐานแล้ว กำลังขยายการจัดการ Block',
+    symbol: 'คลังสัญลักษณ์ (Symbol): สอนสัญลักษณ์ได้แล้ว กำลังเพิ่มคลังส่วนตัว',
+    cloud: 'ซิงค์คลาวด์ (Cloud): ตอนนี้เก็บในเครื่องเท่านั้น',
+    perf: 'ประสิทธิภาพ (Perf): โหมดเร่งความเร็วสำหรับแบบใหญ่ (กำลังพัฒนา)'
+  };
+  var state = {};
+  function show(t) {
+    var el = document.getElementById('featToast');
+    if (!el) return;
+    el.textContent = t;
+    el.style.display = 'block';
+    clearTimeout(show._t);
+    show._t = setTimeout(function () { el.style.display = 'none'; }, 3200);
+  }
+  function callApp(paths) {
+    var a = window.__app;
+    if (!a) return false;
+    for (var i = 0; i < paths.length; i++) {
+      var p = paths[i], o = a, ok = true;
+      for (var j = 0; j < p.length; j++) {
+        if (o == null) { ok = false; break; }
+        o = o[p[j]];
+      }
+      if (ok && typeof o === 'function') { try { o(); return true; } catch (e) {} }
+    }
+    return false;
+  }
+  document.getElementById('featBar').addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-feat]');
+    if (!btn) return;
+    var f = btn.getAttribute('data-feat');
+    state[f] = !state[f];
+    btn.classList.toggle('on', !!state[f]);
+    var ran = false;
+    if (f === 'glb') ran = callApp([['exp', 'glb'], ['exp', 'obj']]);
+    if (f === 'diff') ran = callApp([['compareSheets']]);
+    if (f === 'check') ran = callApp([['clashCheck'], ['runChecks']]);
+    if (f === 'ar') ran = callApp([['startAR']]);
+    show(msgs[f] + (ran ? ' ✓' : ''));
+  });
+})();
+</script>
 </body>
 </html>
