@@ -48,9 +48,7 @@
       else toast('Diff ยังไม่พร้อม');
     } catch (e) { toast('Diff: ' + e.message); }
   }
-  function doLayer() {
-    toast('เลเยอร์: ใช้แผงเครื่องมือ / Layer ในแอป');
-  }
+  function doLayer() { toast('เลเยอร์: ใช้แผงเครื่องมือ / Layer ในแอป'); }
   function doCloud() {
     var a = app();
     try {
@@ -76,7 +74,7 @@
     var btn = e.target.closest && e.target.closest('[data-feat]');
     if (!btn) return;
     var f = btn.getAttribute('data-feat');
-    if (f === 'ar' || f === 'mesh3d' || f === 'symbol' || f === 'fitting' || f === 'iso' || f === 'mto') return;
+    if (f === 'ar' || f === 'mesh3d' || f === 'symbol' || f === 'fitting' || f === 'iso' || f === 'mto' || f === 'ai') return;
     e.preventDefault();
     var map = {
       dwg: doDwg, ocr: doOcr, check: doCheck, glb: doGlb,
@@ -98,16 +96,14 @@
     document.head.appendChild(s);
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot);
-  } else {
-    boot();
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
 
-  loadScript('mesh-builder.js?v=20261122e');
-  loadScript('fittings-kb.js?v=20261122e');
-  loadScript('iso-reader.js?v=20261122e');
-  loadScript('mto-engine.js?v=20261122e');
+  loadScript('mesh-builder.js?v=20261122f');
+  loadScript('fittings-kb.js?v=20261122f');
+  loadScript('iso-reader.js?v=20261122f');
+  loadScript('mto-engine.js?v=20261122f');
+  loadScript('ai-assist.js?v=20261122f');
 
   window.__featuresAll = {
     doDwg: doDwg, doOcr: doOcr, doCheck: doCheck, doGlb: doGlb,
