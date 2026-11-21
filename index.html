@@ -37,6 +37,33 @@
     background: #1c1917; color: #fff; padding: 10px 16px; border-radius: 10px;
     z-index: 9999; font-size: 13px; max-width: 90vw; display: none;
   }
+  #arOverlay {
+    display: none; position: fixed; inset: 0; z-index: 10000;
+    pointer-events: none;
+  }
+  #arOverlay.active { display: block; }
+  #arPanel {
+    pointer-events: auto; position: absolute; left: 50%; bottom: 24px;
+    transform: translateX(-50%); background: rgba(28,25,23,.92);
+    color: #fff; border-radius: 14px; padding: 12px 16px; min-width: 260px;
+    max-width: 92vw; box-shadow: 0 8px 28px rgba(0,0,0,.35);
+    font-size: 13px; text-align: center;
+  }
+  #arPanel h3 { margin: 0 0 6px; font-size: 15px; }
+  #arPanel p { margin: 0 0 10px; opacity: .9; line-height: 1.4; }
+  #arPanel .ar-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  #arPanel button {
+    border: 0; border-radius: 10px; padding: 8px 14px; font-size: 13px;
+    cursor: pointer; background: #fff; color: #1c1917; font-weight: 600;
+  }
+  #arPanel button.danger { background: #e53935; color: #fff; }
+  #arPanel button.secondary { background: #374151; color: #fff; }
+  #arBadge {
+    pointer-events: none; position: absolute; top: 12px; left: 50%;
+    transform: translateX(-50%); background: rgba(46,125,50,.95);
+    color: #fff; padding: 6px 12px; border-radius: 20px; font-size: 12px;
+    font-weight: 600;
+  }
 </style>
 </head>
 <body>
@@ -66,13 +93,12 @@
   </div>
 </header>
 
-<!-- แถบฟีเจอร์ทั้ง 10 ข้อ: ชื่อไทย + ตัวย่ออังกฤษ -->
 <div id="featBar" role="toolbar" aria-label="ฟีเจอร์เพิ่มเติม">
   <button type="button" class="fb soon" data-feat="dwg" title="เปิดไฟล์ DWG โดยตรง">📄 DWG <span class="ab">DWG</span></button>
   <button type="button" class="fb soon" data-feat="ocr" title="OCR ภาษาไทยและอังกฤษ">🔤 OCR ไทย <span class="ab">OCR</span></button>
   <button type="button" class="fb soon" data-feat="check" title="ตรวจอัตโนมัติ / Clash">✅ ตรวจอัตโนมัติ <span class="ab">Check</span></button>
   <button type="button" class="fb ready" data-feat="glb" title="ส่งออกโมเดล 3D เป็น GLB/OBJ">🧊 ส่งออก 3D <span class="ab">GLB</span></button>
-  <button type="button" class="fb soon" data-feat="ar" title="โหมด AR">📱 โหมด AR <span class="ab">AR</span></button>
+  <button type="button" class="fb ready" data-feat="ar" id="btnAR" title="โหมด AR">📱 โหมด AR <span class="ab">AR</span></button>
   <button type="button" class="fb ready" data-feat="diff" title="เปรียบเทียบแบบเก่า-ใหม่">🔄 เปรียบเทียบ <span class="ab">Diff</span></button>
   <button type="button" class="fb soon" data-feat="layer" title="จัดการ Layer / Block">📚 เลเยอร์ <span class="ab">Layer</span></button>
   <button type="button" class="fb soon" data-feat="symbol" title="คลังสัญลักษณ์ส่วนตัว">🔣 คลังสัญลักษณ์ <span class="ab">Symbol</span></button>
@@ -159,6 +185,21 @@
 <div id="modal" class="hidden"><div class="box"><div class="mhead"><b id="mTitle"></b><button id="mClose">✕</button></div><div id="mBody"></div></div></div>
 <div id="toast"></div>
 <div id="featToast"></div>
+
+<!-- แผงควบคุมโหมด AR -->
+<div id="arOverlay">
+  <div id="arBadge">โหมด AR ทำงานอยู่</div>
+  <div id="arPanel">
+    <h3>📱 โหมด AR</h3>
+    <p id="arHelp">เล็งกล้องไปที่พื้น/ผนัง แล้วแตะหน้าจอเพื่อวางโมเดล</p>
+    <div class="ar-row">
+      <button type="button" class="secondary" id="arScaleDown">ย่อ −</button>
+      <button type="button" class="secondary" id="arScaleUp">ขยาย +</button>
+      <button type="button" class="danger" id="arStop">หยุด AR</button>
+    </div>
+  </div>
+</div>
+
 <div id="printArea"></div>
 <input type="file" id="inMulti" multiple accept="image/*,.jpg,.jpeg,.png,.pdf,application/pdf,.dxf" hidden>
 <input type="file" id="inMultiCam" accept="image/*" capture="environment" hidden>
@@ -172,7 +213,7 @@
     ocr: 'OCR ไทย/อังกฤษ: มีพื้นฐานแล้ว กำลังปรับปรุงความแม่นยำ',
     check: 'ตรวจอัตโนมัติ (Check): มีบางส่วนในโค้ด กำลังทำให้เสถียร',
     glb: 'ส่งออก 3D (GLB): กำลังเรียกฟังก์ชันส่งออก…',
-    ar: 'โหมด AR: มีฟังก์ชันเริ่มต้น ยังไม่สมบูรณ์',
+    ar: 'โหมด AR: กำลังเริ่ม…',
     diff: 'เปรียบเทียบแบบ (Diff): กำลังเรียกฟังก์ชันเปรียบเทียบ…',
     layer: 'เลเยอร์ (Layer): มีพื้นฐานแล้ว กำลังขยายการจัดการ Block',
     symbol: 'คลังสัญลักษณ์ (Symbol): สอนสัญลักษณ์ได้แล้ว กำลังเพิ่มคลังส่วนตัว',
@@ -180,6 +221,9 @@
     perf: 'ประสิทธิภาพ (Perf): โหมดเร่งความเร็วสำหรับแบบใหญ่ (กำลังพัฒนา)'
   };
   var state = {};
+  var arSession = null;
+  var arScale = 1 / 50;
+
   function show(t) {
     var el = document.getElementById('featToast');
     if (!el) return;
@@ -188,6 +232,7 @@
     clearTimeout(show._t);
     show._t = setTimeout(function () { el.style.display = 'none'; }, 3200);
   }
+
   function callApp(paths) {
     var a = window.__app;
     if (!a) return false;
@@ -201,17 +246,133 @@
     }
     return false;
   }
+
+  function ensure3D() {
+    try {
+      if (window.__app && typeof window.__app.setMode === 'function') {
+        window.__app.setMode('3d');
+        return true;
+      }
+      var b = document.querySelector('button[data-mode="3d"]');
+      if (b) { b.click(); return true; }
+    } catch (e) {}
+    return false;
+  }
+
+  function hasModel() {
+    try {
+      if (window.__app && typeof window.__app.hasDrawing === 'function') return !!window.__app.hasDrawing();
+      if (window.__app && window.__app.S && window.__app.S.project) return true;
+    } catch (e) {}
+    return false;
+  }
+
+  function showARUI(mode) {
+    var ov = document.getElementById('arOverlay');
+    var help = document.getElementById('arHelp');
+    ov.classList.add('active');
+    if (mode === 'webxr') {
+      help.textContent = 'WebXR: เล็งวงแหวนบนพื้น แล้วแตะเพื่อวางโมเดล · ใช้มือถือที่รองรับ AR');
+    } else {
+      help.textContent = 'โหมดกล้อง: หมุนเครื่องเพื่อมองรอบ · ปรับขนาดด้วยปุ่มด้านล่าง';
+    }
+  }
+
+  function hideARUI() {
+    document.getElementById('arOverlay').classList.remove('active');
+    var btn = document.getElementById('btnAR');
+    if (btn) btn.classList.remove('on');
+    state.ar = false;
+    arSession = null;
+  }
+
+  async function startAR() {
+    if (arSession && typeof arSession.stop === 'function') {
+      try { arSession.stop(); } catch (e) {}
+      hideARUI();
+      show('หยุดโหมด AR แล้ว');
+      return;
+    }
+
+    if (!hasModel()) {
+      show('กรุณาเปิดแบบและแปลงเป็น 3D ก่อน แล้วค่อยกดโหมด AR');
+      return;
+    }
+
+    ensure3D();
+    await new Promise(function (r) { setTimeout(r, 200); });
+
+    var startFn = window.__app && window.__app.startAR;
+    if (typeof startFn !== 'function') {
+      show('ไม่พบฟังก์ชัน AR ในแอป');
+      return;
+    }
+
+    try {
+      show('กำลังขอสิทธิ์กล้อง / AR…');
+      var session = await startFn({
+        scale: arScale,
+        onEnd: function () {
+          hideARUI();
+          show('ปิดโหมด AR แล้ว');
+        },
+        overlay: document.getElementById('arOverlay')
+      });
+      arSession = session || { stop: function () {} };
+      var mode = (session && session.mode) || 'camera';
+      showARUI(mode);
+      document.getElementById('btnAR').classList.add('on');
+      state.ar = true;
+      show(mode === 'webxr'
+        ? 'เปิด WebXR AR แล้ว — แตะพื้นเพื่อวางโมเดล'
+        : 'เปิดโหมดกล้อง AR แล้ว — หมุนเครื่องเพื่อดู');
+    } catch (err) {
+      console.error(err);
+      var msg = (err && err.message) ? String(err.message) : 'ไม่สามารถเปิด AR ได้';
+      if (/permission|NotAllowed|denied/i.test(msg)) {
+        show('ไม่ได้รับอนุญาตใช้กล้อง — อนุญาตในตั้งค่าเบราว์เซอร์แล้วลองใหม่');
+      } else if (/secure|https|Secure/i.test(msg)) {
+        show('AR ต้องเปิดผ่าน HTTPS (GitHub Pages รองรับอยู่แล้ว)');
+      } else {
+        show('เปิด AR ไม่สำเร็จ: ' + msg);
+      }
+      hideARUI();
+    }
+  }
+
+  document.getElementById('arStop').addEventListener('click', function () {
+    if (arSession && typeof arSession.stop === 'function') {
+      try { arSession.stop(); } catch (e) {}
+    }
+    hideARUI();
+    show('หยุดโหมด AR แล้ว');
+  });
+
+  document.getElementById('arScaleUp').addEventListener('click', function () {
+    arScale = Math.min(arScale * 1.25, 1);
+    show('ขยายโมเดล (สเกล ≈ ' + arScale.toFixed(3) + ') — เปิด AR ใหม่เพื่อใช้ค่านี้');
+  });
+  document.getElementById('arScaleDown').addEventListener('click', function () {
+    arScale = Math.max(arScale / 1.25, 0.005);
+    show('ย่อโมเดล (สเกล ≈ ' + arScale.toFixed(3) + ') — เปิด AR ใหม่เพื่อใช้ค่านี้');
+  });
+
   document.getElementById('featBar').addEventListener('click', function (e) {
     var btn = e.target.closest('[data-feat]');
     if (!btn) return;
     var f = btn.getAttribute('data-feat');
+
+    if (f === 'ar') {
+      startAR();
+      return;
+    }
+
     state[f] = !state[f];
     btn.classList.toggle('on', !!state[f]);
     var ran = false;
     if (f === 'glb') ran = callApp([['exp', 'glb'], ['exp', 'obj']]);
     if (f === 'diff') ran = callApp([['compareSheets']]);
     if (f === 'check') ran = callApp([['clashCheck'], ['runChecks']]);
-    if (f === 'ar') ran = callApp([['startAR']]);
     show(msgs[f] + (ran ? ' ✓' : ''));
   });
 })();
