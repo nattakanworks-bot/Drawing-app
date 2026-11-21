@@ -13,7 +13,6 @@
   }
 
   function doDwg() {
-    var a = app();
     toast('เปิดไฟล์ DXF/DWG (แนะนำ DXF)');
     var inp = $('inDxf') || $('inAny');
     if (inp) inp.click();
@@ -53,11 +52,14 @@
     toast('เลเยอร์: ใช้แผงเครื่องมือ / Layer ในแอป');
   }
   function doSymbol() {
-    if (window.SymbolLib && typeof SymbolLib.open === 'function') {
-      SymbolLib.open();
-      return;
-    }
-    toast('คลังสัญลักษณ์: รอโหลด symbol-lib');
+    // เปิดคลัง — ไม่ double กับ symbol-lib listener
+    try {
+      if (window.SymbolLib && typeof SymbolLib.open === 'function') {
+        SymbolLib.open();
+        return;
+      }
+    } catch (e) {}
+    toast('คลังสัญลักษณ์: กำลังโหลด… รีเฟรชหน้าแล้วลองใหม่');
   }
   function doCloud() {
     var a = app();
@@ -68,7 +70,7 @@
     } catch (e) { toast('Cloud: ' + e.message); }
   }
   function doPerf() {
-    toast('โหมดประสิทธิภาพ: ลด dims/edges ใน 3D ถ้ามีในตัวเลือก');
+    toast('โหมดประสิทธิภาพ: ลด dims/edges ใน 3D');
     try {
       var a = app();
       if (a && a.V3 && a.V3.opts) {
@@ -84,28 +86,14 @@
     var btn = e.target.closest && e.target.closest('[data-feat]');
     if (!btn) return;
     var f = btn.getAttribute('data-feat');
-    if (f === 'ar' || f === 'mesh3d') return; // AR / Mesh มี handler เอง
+    // AR / Mesh / Symbol มี handler เฉพาะในไฟล์ของตัวเอง
+    if (f === 'ar' || f === 'mesh3d' || f === 'symbol') return;
     e.preventDefault();
     var map = {
       dwg: doDwg, ocr: doOcr, check: doCheck, glb: doGlb,
-      diff: doDiff, layer: doLayer, symbol: doSymbol,
-      cloud: doCloud, perf: doPerf
+      diff: doDiff, layer: doLayer, cloud: doCloud, perf: doPerf
     };
     if (map[f]) map[f]();
-  }
-
-  function wrapSetWorkType() {
-    var a = app();
-    if (!a || typeof a.setWorkType !== 'function' || a.setWorkType.__featWrapped) return;
-    var orig = a.setWorkType.bind(a);
-    a.setWorkType = function () {
-      var r = orig.apply(a, arguments);
-      try {
-        if (window.SymbolLib) console.info('[features] work type + symbol lib ready');
-      } catch (e) {}
-      return r;
-    };
-    a.setWorkType.__featWrapped = true;
   }
 
   function boot() {
@@ -114,17 +102,15 @@
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { boot(); setTimeout(wrapSetWorkType, 500); });
+    document.addEventListener('DOMContentLoaded', boot);
   } else {
     boot();
-    setTimeout(wrapSetWorkType, 500);
   }
 
-  // โหลดตัวสร้าง mesh 3D จากคลังสัญลักษณ์
   (function loadMeshBuilder() {
-    if (document.querySelector('script[src="mesh-builder.js"]')) return;
+    if (document.querySelector('script[src*="mesh-builder.js"]')) return;
     var s = document.createElement('script');
-    s.src = 'mesh-builder.js';
+    s.src = 'mesh-builder.js?v=20261122a';
     s.async = true;
     document.head.appendChild(s);
   })();
