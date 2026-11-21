@@ -51,15 +51,6 @@
   function doLayer() {
     toast('เลเยอร์: ใช้แผงเครื่องมือ / Layer ในแอป');
   }
-  function doSymbol() {
-    try {
-      if (window.SymbolLib && typeof SymbolLib.open === 'function') {
-        SymbolLib.open();
-        return;
-      }
-    } catch (e) {}
-    toast('คลังสัญลักษณ์: กำลังโหลด… รีเฟรชหน้าแล้วลองใหม่');
-  }
   function doCloud() {
     var a = app();
     try {
@@ -85,7 +76,7 @@
     var btn = e.target.closest && e.target.closest('[data-feat]');
     if (!btn) return;
     var f = btn.getAttribute('data-feat');
-    if (f === 'ar' || f === 'mesh3d' || f === 'symbol' || f === 'fitting' || f === 'iso') return;
+    if (f === 'ar' || f === 'mesh3d' || f === 'symbol' || f === 'fitting' || f === 'iso' || f === 'mto') return;
     e.preventDefault();
     var map = {
       dwg: doDwg, ocr: doOcr, check: doCheck, glb: doGlb,
@@ -113,12 +104,13 @@
     boot();
   }
 
-  loadScript('mesh-builder.js?v=20261122d');
-  loadScript('fittings-kb.js?v=20261122d');
-  loadScript('iso-reader.js?v=20261122d');
+  loadScript('mesh-builder.js?v=20261122e');
+  loadScript('fittings-kb.js?v=20261122e');
+  loadScript('iso-reader.js?v=20261122e');
+  loadScript('mto-engine.js?v=20261122e');
 
   window.__featuresAll = {
     doDwg: doDwg, doOcr: doOcr, doCheck: doCheck, doGlb: doGlb,
-    doDiff: doDiff, doLayer: doLayer, doSymbol: doSymbol, doCloud: doCloud, doPerf: doPerf
+    doDiff: doDiff, doLayer: doLayer, doCloud: doCloud, doPerf: doPerf
   };
 })();
