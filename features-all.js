@@ -52,7 +52,6 @@
     toast('เลเยอร์: ใช้แผงเครื่องมือ / Layer ในแอป');
   }
   function doSymbol() {
-    // เปิดคลัง — ไม่ double กับ symbol-lib listener
     try {
       if (window.SymbolLib && typeof SymbolLib.open === 'function') {
         SymbolLib.open();
@@ -86,8 +85,7 @@
     var btn = e.target.closest && e.target.closest('[data-feat]');
     if (!btn) return;
     var f = btn.getAttribute('data-feat');
-    // AR / Mesh / Symbol มี handler เฉพาะในไฟล์ของตัวเอง
-    if (f === 'ar' || f === 'mesh3d' || f === 'symbol') return;
+    if (f === 'ar' || f === 'mesh3d' || f === 'symbol' || f === 'fitting') return;
     e.preventDefault();
     var map = {
       dwg: doDwg, ocr: doOcr, check: doCheck, glb: doGlb,
@@ -101,19 +99,22 @@
     if (bar) bar.addEventListener('click', onFeatClick);
   }
 
+  function loadScript(src) {
+    if (document.querySelector('script[src*="' + src.split('?')[0] + '"]')) return;
+    var s = document.createElement('script');
+    s.src = src;
+    s.async = true;
+    document.head.appendChild(s);
+  }
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);
   } else {
     boot();
   }
 
-  (function loadMeshBuilder() {
-    if (document.querySelector('script[src*="mesh-builder.js"]')) return;
-    var s = document.createElement('script');
-    s.src = 'mesh-builder.js?v=20261122a';
-    s.async = true;
-    document.head.appendChild(s);
-  })();
+  loadScript('mesh-builder.js?v=20261122c');
+  loadScript('fittings-kb.js?v=20261122c');
 
   window.__featuresAll = {
     doDwg: doDwg, doOcr: doOcr, doCheck: doCheck, doGlb: doGlb,
