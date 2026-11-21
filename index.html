@@ -37,10 +37,7 @@
     background: #1c1917; color: #fff; padding: 10px 16px; border-radius: 10px;
     z-index: 9999; font-size: 13px; max-width: 90vw; display: none;
   }
-  #arOverlay {
-    display: none; position: fixed; inset: 0; z-index: 10000;
-    pointer-events: none;
-  }
+  #arOverlay { display: none; position: fixed; inset: 0; z-index: 10000; pointer-events: none; }
   #arOverlay.active { display: block; }
   #arPanel {
     pointer-events: auto; position: absolute; left: 50%; bottom: 24px;
@@ -61,8 +58,7 @@
   #arBadge {
     pointer-events: none; position: absolute; top: 12px; left: 50%;
     transform: translateX(-50%); background: rgba(46,125,50,.95);
-    color: #fff; padding: 6px 12px; border-radius: 20px; font-size: 12px;
-    font-weight: 600;
+    color: #fff; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
   }
 </style>
 </head>
@@ -101,7 +97,7 @@
   <button type="button" class="fb ready" data-feat="ar" id="btnAR" title="โหมด AR">📱 โหมด AR <span class="ab">AR</span></button>
   <button type="button" class="fb ready" data-feat="diff" title="เปรียบเทียบแบบเก่า-ใหม่">🔄 เปรียบเทียบ <span class="ab">Diff</span></button>
   <button type="button" class="fb ready" data-feat="layer" title="จัดการ Layer / Block">📚 เลเยอร์ <span class="ab">Layer</span></button>
-  <button type="button" class="fb ready" data-feat="symbol" title="คลังสัญลักษณ์ส่วนตัว">🔣 คลังสัญลักษณ์ <span class="ab">Symbol</span></button>
+  <button type="button" class="fb ready" data-feat="symbol" title="คลังสัญลักษณ์ 3D">🔣 คลังสัญลักษณ์ <span class="ab">Symbol</span></button>
   <button type="button" class="fb ready" data-feat="cloud" title="สำรอง/ส่งออกโปรเจกต์">☁️ ซิงค์คลาวด์ <span class="ab">Cloud</span></button>
   <button type="button" class="fb ready" data-feat="perf" title="โหมดประสิทธิภาพแบบใหญ่">⚡ ประสิทธิภาพ <span class="ab">Perf</span></button>
 </div>
@@ -207,6 +203,7 @@
 <script src="app.js"></script>
 <script src="pipe-iso.js"></script>
 <script src="features-all.js"></script>
+<script src="symbol-lib.js"></script>
 <script>
 (function () {
   var arSession = null, arScale = 1/50, arActive = false;
