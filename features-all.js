@@ -85,7 +85,7 @@
     var btn = e.target.closest && e.target.closest('[data-feat]');
     if (!btn) return;
     var f = btn.getAttribute('data-feat');
-    if (f === 'ar' || f === 'mesh3d' || f === 'symbol' || f === 'fitting') return;
+    if (f === 'ar' || f === 'mesh3d' || f === 'symbol' || f === 'fitting' || f === 'iso') return;
     e.preventDefault();
     var map = {
       dwg: doDwg, ocr: doOcr, check: doCheck, glb: doGlb,
@@ -113,8 +113,9 @@
     boot();
   }
 
-  loadScript('mesh-builder.js?v=20261122c');
-  loadScript('fittings-kb.js?v=20261122c');
+  loadScript('mesh-builder.js?v=20261122d');
+  loadScript('fittings-kb.js?v=20261122d');
+  loadScript('iso-reader.js?v=20261122d');
 
   window.__featuresAll = {
     doDwg: doDwg, doOcr: doOcr, doCheck: doCheck, doGlb: doGlb,
