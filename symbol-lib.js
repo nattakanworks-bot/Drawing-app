@@ -2,8 +2,8 @@
 (function () {
   var LIB = null;
   var INDEX = {};
+  var panelBound = false;
 
-  // ชุดขยาย: วาล์วเพิ่ม / ปั๊ม / แท็ก ISA-5.1 (ผสานกับ symbol-lib.json)
   var EXTRA = [
     {id:'AV',th:'วาล์วมุม',en:'Angle Valve',category:'valve',aliases:['angle valve','AV'],ports:2,std:'ISO/ASME',mesh3d:{type:'valve',body:'body_angle'}},
     {id:'4W',th:'วาล์วสี่ทาง',en:'Four-Way Valve',category:'valve',aliases:['4-way','four way'],ports:4,std:'ISO/ASME',mesh3d:{type:'valve',body:'body_4way'}},
@@ -46,7 +46,16 @@
     {id:'TV',th:'วาล์วควบคุมอุณหภูมิ',en:'Temperature Control Valve',category:'instrument',aliases:['TV','TCV'],ports:2,std:'ISA-5.1',mesh3d:{type:'valve',body:'body_control'}},
     {id:'AT',th:'ทรานสมิตเตอร์วิเคราะห์',en:'Analyzer Transmitter',category:'instrument',aliases:['AT','AIT'],ports:1,std:'ISA-5.1',mesh3d:{type:'instrument_bubble',variable:'A',tag:'AT'}},
     {id:'PDT',th:'ทรานสมิตเตอร์ dP',en:'DP Transmitter',category:'instrument',aliases:['PDT','DP'],ports:1,std:'ISA-5.1',mesh3d:{type:'instrument_bubble',variable:'P',tag:'PDT'}},
-    {id:'HS',th:'สวิตช์มือ',en:'Hand Switch',category:'instrument',aliases:['HS'],ports:1,std:'ISA-5.1',mesh3d:{type:'instrument_bubble',variable:'H',tag:'HS'}}
+    {id:'HS',th:'สวิตช์มือ',en:'Hand Switch',category:'instrument',aliases:['HS'],ports:1,std:'ISA-5.1',mesh3d:{type:'instrument_bubble',variable:'H',tag:'HS'}},
+    {id:'PIPE',th:'ท่อ',en:'Pipe run',category:'pipe',aliases:['pipe','ท่อ'],ports:2,std:'ISO/ASME',mesh3d:{type:'cylinder'}},
+    {id:'EL90_LR',th:'ข้องอ 90° LR',en:'Elbow 90 LR',category:'fitting',aliases:['elbow','ข้องอ','EL90'],ports:2,std:'ISO/ASME',mesh3d:{type:'torus_arc',angle_deg:90}},
+    {id:'TEE',th:'ที',en:'Equal Tee',category:'fitting',aliases:['tee','ที'],ports:3,std:'ISO/ASME',mesh3d:{type:'tee'}},
+    {id:'GV',th:'วาล์วเกต',en:'Gate Valve',category:'valve',aliases:['gate','GV','วาล์วเกต'],ports:2,std:'ISO/ASME',mesh3d:{type:'valve',body:'body_gate',handwheel:true}},
+    {id:'GL',th:'วาล์วโกลบ',en:'Globe Valve',category:'valve',aliases:['globe','GL'],ports:2,std:'ISO/ASME',mesh3d:{type:'valve',body:'body_globe',handwheel:true}},
+    {id:'BV',th:'วาล์วบอล',en:'Ball Valve',category:'valve',aliases:['ball','BV'],ports:2,std:'ISO/ASME',mesh3d:{type:'valve',body:'body_ball',handwheel:true}},
+    {id:'CK',th:'วาล์วเช็ค',en:'Check Valve',category:'valve',aliases:['check','CK','NRV'],ports:2,std:'ISO/ASME',mesh3d:{type:'valve',body:'body_check'}},
+    {id:'BF',th:'วาล์วบัตเตอร์ฟลาย',en:'Butterfly Valve',category:'valve',aliases:['butterfly','BF'],ports:2,std:'ISO/ASME',mesh3d:{type:'valve',body:'body_butterfly'}},
+    {id:'FLG_WN',th:'หน้าแปลน WN',en:'WN Flange',category:'flange',aliases:['flange','WN'],ports:2,std:'ASME B16.5',mesh3d:{type:'annulus_disc'}}
   ];
 
   var ISA5 = {
@@ -64,10 +73,7 @@
   }
 
   function categoryColor(c) {
-    return ({
-      pipe:'#60a5fa',fitting:'#34d399',flange:'#fbbf24',valve:'#f87171',
-      weld:'#a3a3a3',support:'#c084fc',special:'#fb923c',instrument:'#22d3ee',pump:'#818cf8'
-    })[c] || '#94a3b8';
+    return ({pipe:'#60a5fa',fitting:'#34d399',flange:'#fbbf24',valve:'#f87171',weld:'#a3a3a3',support:'#c084fc',special:'#fb923c',instrument:'#22d3ee',pump:'#818cf8'})[c] || '#94a3b8';
   }
 
   function mergeExtra(data) {
@@ -81,7 +87,17 @@
     data.count = data.symbols.length;
     data.isa5_1 = ISA5;
     data.version = data.version || '1.1.0';
+    if (!data.nps_hint_mm) data.nps_hint_mm = {'2':60.3,'4':114.3,'6':168.3,'8':219.1};
     return data;
+  }
+
+  function ensureLib() {
+    if (!LIB) {
+      LIB = mergeExtra({ symbols: [] });
+      rebuildIndex();
+      registerWithApp();
+    }
+    return LIB;
   }
 
   function rebuildIndex() {
@@ -96,7 +112,8 @@
   }
 
   function lookup(q) {
-    if (!q || !LIB) return null;
+    ensureLib();
+    if (!q) return null;
     var n = norm(q);
     if (INDEX[n]) return INDEX[n];
     var keys = Object.keys(INDEX);
@@ -110,15 +127,12 @@
     var sy = lookup(symbolId);
     if (!sy) return null;
     var od = (LIB.nps_hint_mm && LIB.nps_hint_mm[String(nps)]) || 114.3;
-    return {
-      id: sy.id, th: sy.th, en: sy.en, category: sy.category,
-      recipe: sy.mesh3d || {}, od_mm: od, r_mm: od / 2, color: categoryColor(sy.category)
-    };
+    return { id: sy.id, th: sy.th, en: sy.en, category: sy.category, recipe: sy.mesh3d || {}, od_mm: od, r_mm: od / 2, color: categoryColor(sy.category) };
   }
 
   function listByCategory() {
+    ensureLib();
     var map = {};
-    if (!LIB) return map;
     (LIB.symbols || []).forEach(function (sy) {
       (map[sy.category] = map[sy.category] || []).push(sy);
     });
@@ -126,66 +140,105 @@
   }
 
   function registerWithApp() {
-    window.__SYMBOL_LIB = {
-      raw: LIB, lookup: lookup, meshParams: meshParams,
-      listByCategory: listByCategory, all: (LIB && LIB.symbols) || [], isa5_1: ISA5
-    };
+    window.__SYMBOL_LIB = { raw: LIB, lookup: lookup, meshParams: meshParams, listByCategory: listByCategory, all: (LIB && LIB.symbols) || [], isa5_1: ISA5 };
     try {
       var a = window.__app;
       if (a && a.SYMS && typeof a.SYMS === 'object' && LIB) {
         LIB.symbols.forEach(function (sy) {
-          try {
-            if (!a.SYMS[sy.id]) a.SYMS[sy.id] = { th: sy.th, en: sy.en, aliases: sy.aliases };
-          } catch (e) {}
+          try { if (!a.SYMS[sy.id]) a.SYMS[sy.id] = { th: sy.th, en: sy.en, aliases: sy.aliases }; } catch (e) {}
         });
       }
     } catch (e) {}
   }
 
-  function openBrowser() {
-    if (!LIB) {
-      alert('กำลังโหลดคลังสัญลักษณ์… ลองใหม่ใน 1 วินาที');
-      return;
-    }
-    var existing = document.getElementById('symLibPanel');
-    if (existing) { existing.classList.toggle('open'); return; }
+  function injectCss() {
+    if (document.getElementById('symLibCss')) return;
     var css = document.createElement('style');
-    css.textContent = '#symLibPanel{display:none;position:fixed;left:12px;top:110px;bottom:56px;width:min(420px,96vw);z-index:9600;background:#fff;border:1px solid #c5d0dc;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.2);overflow:auto;font-size:12px}#symLibPanel.open{display:block}#symLibPanel .sh{position:sticky;top:0;background:#0f766e;color:#fff;padding:10px 12px;display:flex;justify-content:space-between;align-items:center}#symLibPanel .sh h3{margin:0;font-size:14px}#symLibPanel .sh button{border:0;background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:4px 10px;cursor:pointer}#symLibPanel .sb{padding:10px 12px}#symLibPanel .cat{margin:10px 0 4px;font-weight:700;color:#0f766e}#symLibPanel .row{display:flex;gap:8px;border-bottom:1px solid #eee;padding:6px 0;align-items:flex-start}#symLibPanel .dot{width:10px;height:10px;border-radius:50%;margin-top:4px;flex:0 0 auto}#symLibPanel .meta{opacity:.75;font-size:11px}#symLibPanel input{width:100%;padding:8px;border:1px solid #c5d0dc;border-radius:8px;margin-bottom:8px;box-sizing:border-box}#symLibPanel .isa{background:#f0fdfa;border:1px solid #99f6e4;border-radius:10px;padding:8px;margin-bottom:10px;font-size:11px}';
+    css.id = 'symLibCss';
+    css.textContent = [
+      '#symLibPanel{display:none;position:fixed;left:12px;top:100px;bottom:48px;width:min(420px,94vw);z-index:20000;',
+      'background:#fff;border:1px solid #c5d0dc;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.28);',
+      'overflow:auto;font-size:12px;color:#1c1917}',
+      '#symLibPanel.open{display:block !important}',
+      '#symLibPanel .sh{position:sticky;top:0;background:#0f766e;color:#fff;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;z-index:1}',
+      '#symLibPanel .sh h3{margin:0;font-size:14px}',
+      '#symLibPanel .sh button{border:0;background:rgba(255,255,255,.22);color:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:600}',
+      '#symLibPanel .sb{padding:10px 12px}',
+      '#symLibPanel .cat{margin:10px 0 4px;font-weight:700;color:#0f766e}',
+      '#symLibPanel .row{display:flex;gap:8px;border-bottom:1px solid #eee;padding:6px 0;align-items:flex-start}',
+      '#symLibPanel .dot{width:10px;height:10px;border-radius:50%;margin-top:4px;flex:0 0 auto}',
+      '#symLibPanel .meta{opacity:.75;font-size:11px}',
+      '#symLibPanel input{width:100%;padding:8px;border:1px solid #c5d0dc;border-radius:8px;margin-bottom:8px;box-sizing:border-box}',
+      '#symLibPanel .isa{background:#f0fdfa;border:1px solid #99f6e4;border-radius:10px;padding:8px;margin-bottom:10px;font-size:11px;line-height:1.45}'
+    ].join('');
     document.head.appendChild(css);
+  }
+
+  function renderList(filter) {
+    var body = document.getElementById('symLibBody');
+    if (!body) return;
+    var f = norm(filter);
+    var by = listByCategory();
+    var html = '';
+    Object.keys(by).sort().forEach(function (cat) {
+      var rows = by[cat].filter(function (sy) {
+        if (!f) return true;
+        var blob = norm([sy.id, sy.th, sy.en].concat(sy.aliases || []).join(' '));
+        return blob.indexOf(f) >= 0;
+      });
+      if (!rows.length) return;
+      html += '<div class="cat">' + cat + ' (' + rows.length + ')</div>';
+      rows.forEach(function (sy) {
+        html += '<div class="row"><span class="dot" style="background:' + categoryColor(sy.category) + '"></span><div><b>' +
+          sy.th + '</b> · ' + sy.en + '<div class="meta">' + sy.id + ' · ' + ((sy.mesh3d && sy.mesh3d.type) || '') +
+          ' · ' + (sy.aliases || []).slice(0, 5).join(', ') + '</div></div></div>';
+      });
+    });
+    body.innerHTML = html || '<div class="meta">ไม่พบสัญลักษณ์</div>';
+  }
+
+  function openBrowser() {
+    ensureLib();
+    injectCss();
+    var existing = document.getElementById('symLibPanel');
+    if (existing) {
+      // เปิดค้าง — ไม่ toggle ปิด (กันคลิกซ้ำจาก features-all + listener)
+      existing.classList.add('open');
+      var title = existing.querySelector('h3');
+      if (title) title.textContent = '🔣 คลังสัญลักษณ์ 3D (' + (LIB.count || 0) + ')';
+      renderList((document.getElementById('symLibQ') || {}).value || '');
+      return existing;
+    }
+
     var d = document.createElement('div');
     d.id = 'symLibPanel';
     d.className = 'open';
-    d.innerHTML = '<div class="sh"><h3>🔣 คลังสัญลักษณ์ 3D (' + (LIB.count || 0) + ')</h3><button type="button" id="symLibClose">ปิด</button></div><div class="sb">' +
+    d.innerHTML = '<div class="sh"><h3>🔣 คลังสัญลักษณ์ 3D (' + (LIB.count || 0) + ')</h3>' +
+      '<button type="button" id="symLibClose">ปิด</button></div><div class="sb">' +
       '<div class="isa"><b>ISA-5.1</b> ' + ISA5.standard + '<br/>แท็ก: ' + ISA5.tag_format +
       '<br/>ตัวอย่าง: ' + ISA5.examples.join(', ') + '<br/>' + ISA5.note_th + '</div>' +
-      '<input id="symLibQ" placeholder="ค้นหา เช่น pump, gate, PT, ข้องอ…"/><div id="symLibBody"></div></div>';
+      '<input id="symLibQ" type="search" placeholder="ค้นหา เช่น pump, gate, PT, ข้องอ…" autocomplete="off"/>' +
+      '<div id="symLibBody"></div></div>';
     document.body.appendChild(d);
-    document.getElementById('symLibClose').onclick = function () { d.classList.remove('open'); };
-    function render(filter) {
-      var body = document.getElementById('symLibBody');
-      var f = norm(filter);
-      var by = listByCategory();
-      var html = '';
-      Object.keys(by).sort().forEach(function (cat) {
-        var rows = by[cat].filter(function (sy) {
-          if (!f) return true;
-          var blob = norm([sy.id, sy.th, sy.en].concat(sy.aliases || []).join(' '));
-          return blob.indexOf(f) >= 0;
-        });
-        if (!rows.length) return;
-        html += '<div class="cat">' + cat + ' (' + rows.length + ')</div>';
-        rows.forEach(function (sy) {
-          html += '<div class="row"><span class="dot" style="background:' + categoryColor(sy.category) + '"></span><div><b>' + sy.th + '</b> · ' + sy.en +
-            '<div class="meta">' + sy.id + ' · ' + ((sy.mesh3d && sy.mesh3d.type) || '') + ' · ' + (sy.aliases || []).slice(0, 5).join(', ') + '</div></div></div>';
-        });
-      });
-      body.innerHTML = html || '<div class="meta">ไม่พบ</div>';
-    }
-    render('');
-    document.getElementById('symLibQ').oninput = function (e) { render(e.target.value); };
+
+    document.getElementById('symLibClose').onclick = function (ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      d.classList.remove('open');
+    };
+    document.getElementById('symLibQ').oninput = function (e) { renderList(e.target.value); };
+    renderList('');
+    return d;
+  }
+
+  function closeBrowser() {
+    var el = document.getElementById('symLibPanel');
+    if (el) el.classList.remove('open');
   }
 
   function load() {
+    // เริ่มด้วย EXTRA ทันที เพื่อกดปุ่มได้เลย
+    ensureLib();
     fetch('symbol-lib.json', { cache: 'no-store' })
       .then(function (r) { return r.json(); })
       .then(function (data) {
@@ -193,26 +246,35 @@
         rebuildIndex();
         registerWithApp();
         console.info('[symbol-lib] loaded', LIB.count, 'symbols');
+        var title = document.querySelector('#symLibPanel h3');
+        if (title) title.textContent = '🔣 คลังสัญลักษณ์ 3D (' + LIB.count + ')';
+        if (document.getElementById('symLibBody')) renderList((document.getElementById('symLibQ') || {}).value || '');
       })
-      .catch(function () {
-        LIB = mergeExtra({ symbols: [], nps_hint_mm: { '2': 60.3, '4': 114.3, '6': 168.3 } });
-        rebuildIndex();
-        registerWithApp();
-        console.info('[symbol-lib] offline EXTRA only', LIB.count);
+      .catch(function (e) {
+        console.warn('[symbol-lib] json fetch failed, using EXTRA', e);
       });
   }
 
-  document.addEventListener('click', function (e) {
+  // คลิกปุ่ม Symbol — ใช้แค่ path เดียว (ไม่ capture + features พร้อมกันแบบ toggle)
+  function onSymbolClick(e) {
     var t = e.target.closest && e.target.closest('[data-feat="symbol"]');
     if (!t) return;
-    setTimeout(openBrowser, 50);
-  }, true);
+    e.preventDefault();
+    e.stopPropagation();
+    openBrowser();
+  }
+
+  if (!panelBound) {
+    panelBound = true;
+    document.addEventListener('click', onSymbolClick, true);
+  }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', load);
   else load();
 
   window.SymbolLib = {
     open: openBrowser,
+    close: closeBrowser,
     lookup: lookup,
     meshParams: meshParams,
     isa5_1: ISA5,
