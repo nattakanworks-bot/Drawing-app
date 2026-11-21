@@ -94,16 +94,16 @@
 </header>
 
 <div id="featBar" role="toolbar" aria-label="ฟีเจอร์เพิ่มเติม">
-  <button type="button" class="fb soon" data-feat="dwg" title="เปิดไฟล์ DWG โดยตรง">📄 DWG <span class="ab">DWG</span></button>
-  <button type="button" class="fb soon" data-feat="ocr" title="OCR ภาษาไทยและอังกฤษ">🔤 OCR ไทย <span class="ab">OCR</span></button>
-  <button type="button" class="fb soon" data-feat="check" title="ตรวจอัตโนมัติ / Clash">✅ ตรวจอัตโนมัติ <span class="ab">Check</span></button>
+  <button type="button" class="fb ready" data-feat="dwg" title="เปิดไฟล์ DWG / DXF">📄 DWG <span class="ab">DWG</span></button>
+  <button type="button" class="fb ready" data-feat="ocr" title="OCR ภาษาไทยและอังกฤษ">🔤 OCR ไทย <span class="ab">OCR</span></button>
+  <button type="button" class="fb ready" data-feat="check" title="ตรวจอัตโนมัติ / Clash">✅ ตรวจอัตโนมัติ <span class="ab">Check</span></button>
   <button type="button" class="fb ready" data-feat="glb" title="ส่งออกโมเดล 3D เป็น GLB/OBJ">🧊 ส่งออก 3D <span class="ab">GLB</span></button>
   <button type="button" class="fb ready" data-feat="ar" id="btnAR" title="โหมด AR">📱 โหมด AR <span class="ab">AR</span></button>
   <button type="button" class="fb ready" data-feat="diff" title="เปรียบเทียบแบบเก่า-ใหม่">🔄 เปรียบเทียบ <span class="ab">Diff</span></button>
-  <button type="button" class="fb soon" data-feat="layer" title="จัดการ Layer / Block">📚 เลเยอร์ <span class="ab">Layer</span></button>
-  <button type="button" class="fb soon" data-feat="symbol" title="คลังสัญลักษณ์ส่วนตัว">🔣 คลังสัญลักษณ์ <span class="ab">Symbol</span></button>
-  <button type="button" class="fb soon" data-feat="cloud" title="ซิงค์และแชร์โปรเจกต์">☁️ ซิงค์คลาวด์ <span class="ab">Cloud</span></button>
-  <button type="button" class="fb soon" data-feat="perf" title="โหมดประสิทธิภาพแบบใหญ่">⚡ ประสิทธิภาพ <span class="ab">Perf</span></button>
+  <button type="button" class="fb ready" data-feat="layer" title="จัดการ Layer / Block">📚 เลเยอร์ <span class="ab">Layer</span></button>
+  <button type="button" class="fb ready" data-feat="symbol" title="คลังสัญลักษณ์ส่วนตัว">🔣 คลังสัญลักษณ์ <span class="ab">Symbol</span></button>
+  <button type="button" class="fb ready" data-feat="cloud" title="สำรอง/ส่งออกโปรเจกต์">☁️ ซิงค์คลาวด์ <span class="ab">Cloud</span></button>
+  <button type="button" class="fb ready" data-feat="perf" title="โหมดประสิทธิภาพแบบใหญ่">⚡ ประสิทธิภาพ <span class="ab">Perf</span></button>
 </div>
 
 <div id="stepBar" class="stepbar">
@@ -206,84 +206,26 @@
 <script>window.PDF_WORKER_SRC='vendor/pdf.worker.min.js';window.SW_URL='sw.js';</script>
 <script src="app.js"></script>
 <script src="pipe-iso.js"></script>
+<script src="features-all.js"></script>
 <script>
 (function () {
-  var msgs = {
-    dwg: 'DWG: ยังต้องแปลงเป็น DXF ก่อน (ฟีเจอร์เต็มรูปแบบอยู่ระหว่างพัฒนา)',
-    ocr: 'OCR ไทย/อังกฤษ: มีพื้นฐานแล้ว กำลังปรับปรุงความแม่นยำ',
-    check: 'ตรวจอัตโนมัติ (Check): มีบางส่วนในโค้ด กำลังทำให้เสถียร',
-    glb: 'ส่งออก 3D (GLB): กำลังเรียกฟังก์ชันส่งออก…',
-    ar: 'โหมด AR: กำลังเริ่ม…',
-    diff: 'เปรียบเทียบแบบ (Diff): กำลังเรียกฟังก์ชันเปรียบเทียบ…',
-    layer: 'เลเยอร์ (Layer): มีพื้นฐานแล้ว กำลังขยายการจัดการ Block',
-    symbol: 'คลังสัญลักษณ์ (Symbol): สอนสัญลักษณ์ได้แล้ว กำลังเพิ่มคลังส่วนตัว',
-    cloud: 'ซิงค์คลาวด์ (Cloud): ตอนนี้เก็บในเครื่องเท่านั้น',
-    perf: 'ประสิทธิภาพ (Perf): โหมดเร่งความเร็วสำหรับแบบใหญ่ (กำลังพัฒนา)'
-  };
-  var state = {};
-  var arSession = null;
-  var arScale = 1 / 50;
-  var arActive = false;
-
+  var arSession = null, arScale = 1/50, arActive = false;
   function show(t) {
     var el = document.getElementById('featToast');
     if (!el) return;
-    el.textContent = t;
-    el.style.display = 'block';
+    el.textContent = t; el.style.display = 'block';
     clearTimeout(show._t);
     show._t = setTimeout(function () { el.style.display = 'none'; }, 2800);
   }
-
-  function callApp(paths) {
-    var a = window.__app;
-    if (!a) return false;
-    for (var i = 0; i < paths.length; i++) {
-      var p = paths[i], o = a, ok = true;
-      for (var j = 0; j < p.length; j++) {
-        if (o == null) { ok = false; break; }
-        o = o[p[j]];
-      }
-      if (ok && typeof o === 'function') { try { o(); return true; } catch (e) {} }
-    }
-    return false;
-  }
-
-  function ensure3D() {
-    try {
-      if (window.__app && typeof window.__app.setMode === 'function') {
-        window.__app.setMode('3d');
-        return true;
-      }
-      var b = document.querySelector('button[data-mode="3d"]');
-      if (b) { b.click(); return true; }
-    } catch (e) {}
-    return false;
-  }
-
-  function hasModel() {
-    try {
-      if (window.__app && typeof window.__app.hasDrawing === 'function') return !!window.__app.hasDrawing();
-      if (window.__app && window.__app.S && window.__app.S.project) return true;
-    } catch (e) {}
-    return true;
-  }
-
   function forceStopCameraFallback() {
     document.querySelectorAll('video.arvideo, video[playsinline]').forEach(function (v) {
       try {
-        if (v.srcObject) {
-          v.srcObject.getTracks().forEach(function (t) { try { t.stop(); } catch (e) {} });
-          v.srcObject = null;
-        }
-        v.pause();
-        v.remove();
+        if (v.srcObject) { v.srcObject.getTracks().forEach(function (t) { try { t.stop(); } catch (e) {} }); v.srcObject = null; }
+        v.pause(); v.remove();
       } catch (e) {}
     });
-    document.querySelectorAll('.ar-on').forEach(function (el) {
-      el.classList.remove('ar-on');
-    });
+    document.querySelectorAll('.ar-on').forEach(function (el) { el.classList.remove('ar-on'); });
   }
-
   function forceStopWebXR() {
     try {
       var a = window.__app;
@@ -296,87 +238,57 @@
       }
     } catch (e) {}
   }
-
   function hideARUI() {
     var ov = document.getElementById('arOverlay');
     if (ov) ov.classList.remove('active');
     var btn = document.getElementById('btnAR');
     if (btn) btn.classList.remove('on');
-    state.ar = false;
     arActive = false;
   }
-
-  function stopAR(fromUser) {
-    try {
-      if (arSession) {
-        if (typeof arSession.stop === 'function') arSession.stop();
-        else if (arSession.end) arSession.end();
-      }
-    } catch (e) {}
-    forceStopCameraFallback();
-    forceStopWebXR();
-    arSession = null;
-    hideARUI();
-    if (fromUser !== false) show('ปิดโหมด AR แล้ว');
+  function stopAR() {
+    try { if (arSession) { if (typeof arSession.stop === 'function') arSession.stop(); else if (arSession.end) arSession.end(); } } catch (e) {}
+    forceStopCameraFallback(); forceStopWebXR(); arSession = null; hideARUI(); show('ปิดโหมด AR แล้ว');
   }
-
   function showARUI(mode) {
     var ov = document.getElementById('arOverlay');
     var help = document.getElementById('arHelp');
     if (ov) ov.classList.add('active');
-    if (help) {
-      help.textContent = mode === 'webxr'
-        ? 'WebXR: เล็งวงแหวนบนพื้น แล้วแตะเพื่อวางโมเดล'
-        : 'โหมดกล้อง: หมุนเครื่องเพื่อมองรอบ · กด "หยุด AR" เพื่อปิด';
-    }
+    if (help) help.textContent = mode === 'webxr' ? 'WebXR: แตะพื้นเพื่อวางโมเดล' : 'โหมดกล้อง: กด "หยุด AR" เพื่อปิด';
     arActive = true;
     var btn = document.getElementById('btnAR');
     if (btn) btn.classList.add('on');
-    state.ar = true;
   }
-
   async function startAR() {
-    if (arActive || arSession) { stopAR(true); return; }
-    ensure3D();
+    if (arActive || arSession) { stopAR(); return; }
+    try {
+      if (window.__app && typeof window.__app.setMode === 'function') window.__app.setMode('3d');
+      else { var b = document.querySelector('button[data-mode="3d"]'); if (b) b.click(); }
+    } catch (e) {}
     await new Promise(function (r) { setTimeout(r, 250); });
     var startFn = window.__app && window.__app.startAR;
-    if (typeof startFn !== 'function') { show('ไม่พบฟังก์ชัน AR ในแอป'); return; }
+    if (typeof startFn !== 'function') { show('ไม่พบฟังก์ชัน AR'); return; }
     try {
       show('กำลังขอสิทธิ์กล้อง / AR…');
       var session = await Promise.resolve(startFn({
         scale: arScale,
-        onEnd: function () {
-          forceStopCameraFallback(); forceStopWebXR(); arSession = null; hideARUI(); show('ปิดโหมด AR แล้ว');
-        },
+        onEnd: function () { forceStopCameraFallback(); forceStopWebXR(); arSession = null; hideARUI(); show('ปิดโหมด AR แล้ว'); },
         overlay: document.getElementById('arOverlay')
       }));
       arSession = session || null;
-      var mode = (session && session.mode) || 'camera';
-      showARUI(mode);
-      show(mode === 'webxr' ? 'เปิด WebXR AR แล้ว' : 'เปิดโหมดกล้อง AR แล้ว — กดหยุด AR เพื่อปิด');
+      showARUI((session && session.mode) || 'camera');
+      show('เปิดโหมด AR แล้ว');
     } catch (err) {
       forceStopCameraFallback(); forceStopWebXR(); hideARUI();
       show('เปิด AR ไม่สำเร็จ: ' + ((err && err.message) || ''));
     }
   }
-
   var stopBtn = document.getElementById('arStop');
-  if (stopBtn) stopBtn.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); stopAR(true); });
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && arActive) { e.preventDefault(); stopAR(true); } });
-
+  if (stopBtn) stopBtn.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); stopAR(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && arActive) { e.preventDefault(); stopAR(); } });
   document.getElementById('featBar').addEventListener('click', function (e) {
     var btn = e.target.closest('[data-feat]');
     if (!btn) return;
-    var f = btn.getAttribute('data-feat');
-    if (f === 'ar') { startAR(); return; }
-    if (f === 'pipe') return;
-    state[f] = !state[f];
-    btn.classList.toggle('on', !!state[f]);
-    var ran = false;
-    if (f === 'glb') ran = callApp([['exp', 'glb'], ['exp', 'obj']]);
-    if (f === 'diff') ran = callApp([['compareSheets']]);
-    if (f === 'check') ran = callApp([['clashCheck'], ['runChecks']]);
-    show(msgs[f] + (ran ? ' ✓' : ''));
+    if (btn.getAttribute('data-feat') === 'ar') startAR();
   });
 })();
 </script>
