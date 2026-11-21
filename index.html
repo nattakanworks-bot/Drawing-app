@@ -97,7 +97,7 @@
   <button type="button" class="fb ready" data-feat="ar" id="btnAR" title="โหมด AR">📱 โหมด AR <span class="ab">AR</span></button>
   <button type="button" class="fb ready" data-feat="diff" title="เปรียบเทียบแบบเก่า-ใหม่">🔄 เปรียบเทียบ <span class="ab">Diff</span></button>
   <button type="button" class="fb ready" data-feat="layer" title="จัดการ Layer / Block">📚 เลเยอร์ <span class="ab">Layer</span></button>
-  <button type="button" class="fb ready" data-feat="symbol" title="คลังสัญลักษณ์ 3D">🔣 คลังสัญลักษณ์ <span class="ab">Symbol</span></button>
+  <button type="button" class="fb ready" data-feat="symbol" id="btnSymbol" title="คลังสัญลักษณ์ 3D">🔣 คลังสัญลักษณ์ <span class="ab">Symbol</span></button>
   <button type="button" class="fb ready" data-feat="cloud" title="สำรอง/ส่งออกโปรเจกต์">☁️ ซิงค์คลาวด์ <span class="ab">Cloud</span></button>
   <button type="button" class="fb ready" data-feat="perf" title="โหมดประสิทธิภาพแบบใหญ่">⚡ ประสิทธิภาพ <span class="ab">Perf</span></button>
 </div>
@@ -202,10 +202,33 @@
 <script>window.PDF_WORKER_SRC='vendor/pdf.worker.min.js';window.SW_URL='sw.js';</script>
 <script src="app.js"></script>
 <script src="pipe-iso.js"></script>
-<script src="features-all.js"></script>
-<script src="symbol-lib.js"></script>
+<script src="features-all.js?v=20261122b"></script>
+<script src="symbol-lib.js?v=20261122b"></script>
 <script>
 (function () {
+  // สำรอง: ผูกปุ่ม Symbol ตรง ๆ ถ้า listener อื่นล้ม
+  function bindSymbol() {
+    var btn = document.getElementById('btnSymbol') || document.querySelector('[data-feat="symbol"]');
+    if (!btn || btn.__symBound) return;
+    btn.__symBound = true;
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (window.SymbolLib && typeof SymbolLib.open === 'function') {
+        SymbolLib.open();
+      } else {
+        var t = document.getElementById('featToast');
+        if (t) { t.textContent = 'กำลังโหลดคลังสัญลักษณ์…'; t.style.display = 'block'; }
+        setTimeout(function () {
+          if (window.SymbolLib && SymbolLib.open) SymbolLib.open();
+        }, 400);
+      }
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSymbol);
+  else bindSymbol();
+  setTimeout(bindSymbol, 800);
+
   var arSession = null, arScale = 1/50, arActive = false;
   function show(t) {
     var el = document.getElementById('featToast');
@@ -282,7 +305,8 @@
   var stopBtn = document.getElementById('arStop');
   if (stopBtn) stopBtn.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); stopAR(); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && arActive) { e.preventDefault(); stopAR(); } });
-  document.getElementById('featBar').addEventListener('click', function (e) {
+  var featBar = document.getElementById('featBar');
+  if (featBar) featBar.addEventListener('click', function (e) {
     var btn = e.target.closest('[data-feat]');
     if (!btn) return;
     if (btn.getAttribute('data-feat') === 'ar') startAR();
