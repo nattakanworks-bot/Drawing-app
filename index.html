@@ -186,7 +186,6 @@
 <div id="toast"></div>
 <div id="featToast"></div>
 
-<!-- แผงควบคุมโหมด AR -->
 <div id="arOverlay">
   <div id="arBadge">โหมด AR ทำงานอยู่</div>
   <div id="arPanel">
@@ -223,6 +222,7 @@
   var state = {};
   var arSession = null;
   var arScale = 1 / 50;
+  var arActive = false;
 
   function show(t) {
     var el = document.getElementById('featToast');
@@ -230,7 +230,7 @@
     el.textContent = t;
     el.style.display = 'block';
     clearTimeout(show._t);
-    show._t = setTimeout(function () { el.style.display = 'none'; }, 3200);
+    show._t = setTimeout(function () { el.style.display = 'none'; }, 2800);
   }
 
   function callApp(paths) {
@@ -264,33 +264,93 @@
       if (window.__app && typeof window.__app.hasDrawing === 'function') return !!window.__app.hasDrawing();
       if (window.__app && window.__app.S && window.__app.S.project) return true;
     } catch (e) {}
-    return false;
+    return true;
+  }
+
+  function forceStopCameraFallback() {
+    document.querySelectorAll('video.arvideo, video[playsinline]').forEach(function (v) {
+      try {
+        if (v.srcObject) {
+          v.srcObject.getTracks().forEach(function (t) { try { t.stop(); } catch (e) {} });
+          v.srcObject = null;
+        }
+        v.pause();
+        v.remove();
+      } catch (e) {}
+    });
+    document.querySelectorAll('.ar-on').forEach(function (el) {
+      el.classList.remove('ar-on');
+    });
+    try {
+      if (window.__app && window.__app.V3) window.__app.V3.arOri = null;
+    } catch (e) {}
+  }
+
+  function forceStopWebXR() {
+    try {
+      var a = window.__app;
+      var renderer = a && ((a.V3 && a.V3.renderer) || (a.pt && a.pt.renderer));
+      if (renderer && renderer.xr) {
+        try { renderer.setAnimationLoop(null); } catch (e) {}
+        try { renderer.xr.enabled = false; } catch (e) {}
+        var sess = renderer.xr.getSession && renderer.xr.getSession();
+        if (sess && sess.end) {
+          try { sess.end(); } catch (e) {}
+        }
+      }
+    } catch (e) {}
+  }
+
+  function hideARUI() {
+    var ov = document.getElementById('arOverlay');
+    if (ov) ov.classList.remove('active');
+    var btn = document.getElementById('btnAR');
+    if (btn) btn.classList.remove('on');
+    state.ar = false;
+    arActive = false;
+  }
+
+  function stopAR(fromUser) {
+    try {
+      if (arSession) {
+        if (typeof arSession.stop === 'function') arSession.stop();
+        else if (arSession.end) arSession.end();
+      }
+    } catch (e) { console.warn('arSession.stop', e); }
+
+    forceStopCameraFallback();
+    forceStopWebXR();
+
+    arSession = null;
+    hideARUI();
+
+    try {
+      if (window.__app && typeof window.__app.setMode === 'function') {
+        window.__app.setMode('3d');
+      }
+    } catch (e) {}
+
+    if (fromUser !== false) show('ปิดโหมด AR แล้ว');
   }
 
   function showARUI(mode) {
     var ov = document.getElementById('arOverlay');
     var help = document.getElementById('arHelp');
-    ov.classList.add('active');
-    if (mode === 'webxr') {
-      help.textContent = 'WebXR: เล็งวงแหวนบนพื้น แล้วแตะเพื่อวางโมเดล · ใช้มือถือที่รองรับ AR');
-    } else {
-      help.textContent = 'โหมดกล้อง: หมุนเครื่องเพื่อมองรอบ · ปรับขนาดด้วยปุ่มด้านล่าง';
+    if (ov) ov.classList.add('active');
+    if (help) {
+      help.textContent = mode === 'webxr'
+        ? 'WebXR: เล็งวงแหวนบนพื้น แล้วแตะเพื่อวางโมเดล'
+        : 'โหมดกล้อง: หมุนเครื่องเพื่อมองรอบ · กด "หยุด AR" เพื่อปิด';
     }
-  }
-
-  function hideARUI() {
-    document.getElementById('arOverlay').classList.remove('active');
+    arActive = true;
     var btn = document.getElementById('btnAR');
-    if (btn) btn.classList.remove('on');
-    state.ar = false;
-    arSession = null;
+    if (btn) btn.classList.add('on');
+    state.ar = true;
   }
 
   async function startAR() {
-    if (arSession && typeof arSession.stop === 'function') {
-      try { arSession.stop(); } catch (e) {}
-      hideARUI();
-      show('หยุดโหมด AR แล้ว');
+    if (arActive || arSession) {
+      stopAR(true);
       return;
     }
 
@@ -300,7 +360,7 @@
     }
 
     ensure3D();
-    await new Promise(function (r) { setTimeout(r, 200); });
+    await new Promise(function (r) { setTimeout(r, 250); });
 
     var startFn = window.__app && window.__app.startAR;
     if (typeof startFn !== 'function') {
@@ -310,51 +370,62 @@
 
     try {
       show('กำลังขอสิทธิ์กล้อง / AR…');
-      var session = await startFn({
+      var session = await Promise.resolve(startFn({
         scale: arScale,
         onEnd: function () {
+          forceStopCameraFallback();
+          forceStopWebXR();
+          arSession = null;
           hideARUI();
           show('ปิดโหมด AR แล้ว');
         },
         overlay: document.getElementById('arOverlay')
-      });
-      arSession = session || { stop: function () {} };
+      }));
+      arSession = session || null;
       var mode = (session && session.mode) || 'camera';
       showARUI(mode);
-      document.getElementById('btnAR').classList.add('on');
-      state.ar = true;
       show(mode === 'webxr'
         ? 'เปิด WebXR AR แล้ว — แตะพื้นเพื่อวางโมเดล'
-        : 'เปิดโหมดกล้อง AR แล้ว — หมุนเครื่องเพื่อดู');
+        : 'เปิดโหมดกล้อง AR แล้ว — กดปุ่มหยุด AR เพื่อปิด');
     } catch (err) {
       console.error(err);
+      forceStopCameraFallback();
+      forceStopWebXR();
+      hideARUI();
       var msg = (err && err.message) ? String(err.message) : 'ไม่สามารถเปิด AR ได้';
       if (/permission|NotAllowed|denied/i.test(msg)) {
         show('ไม่ได้รับอนุญาตใช้กล้อง — อนุญาตในตั้งค่าเบราว์เซอร์แล้วลองใหม่');
-      } else if (/secure|https|Secure/i.test(msg)) {
-        show('AR ต้องเปิดผ่าน HTTPS (GitHub Pages รองรับอยู่แล้ว)');
       } else {
         show('เปิด AR ไม่สำเร็จ: ' + msg);
       }
-      hideARUI();
     }
   }
 
-  document.getElementById('arStop').addEventListener('click', function () {
-    if (arSession && typeof arSession.stop === 'function') {
-      try { arSession.stop(); } catch (e) {}
-    }
-    hideARUI();
-    show('หยุดโหมด AR แล้ว');
+  var stopBtn = document.getElementById('arStop');
+  if (stopBtn) {
+    stopBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      stopAR(true);
+    });
+  }
+
+  var up = document.getElementById('arScaleUp');
+  var down = document.getElementById('arScaleDown');
+  if (up) up.addEventListener('click', function () {
+    arScale = Math.min(arScale * 1.25, 1);
+    show('ขยายสเกล ≈ ' + arScale.toFixed(3) + ' (เปิด AR ใหม่เพื่อใช้ค่านี้)');
+  });
+  if (down) down.addEventListener('click', function () {
+    arScale = Math.max(arScale / 1.25, 0.005);
+    show('ย่อสเกล ≈ ' + arScale.toFixed(3) + ' (เปิด AR ใหม่เพื่อใช้ค่านี้)');
   });
 
-  document.getElementById('arScaleUp').addEventListener('click', function () {
-    arScale = Math.min(arScale * 1.25, 1);
-    show('ขยายโมเดล (สเกล ≈ ' + arScale.toFixed(3) + ') — เปิด AR ใหม่เพื่อใช้ค่านี้');
-  });
-  document.getElementById('arScaleDown').addEventListener('click', function () {
-    arScale = Math.max(arScale / 1.25, 0.005);
-    show('ย่อโมเดล (สเกล ≈ ' + arScale.toFixed(3) + ') — เปิด AR ใหม่เพื่อใช้ค่านี้');
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && arActive) {
+      e.preventDefault();
+      stopAR(true);
+    }
   });
 
   document.getElementById('featBar').addEventListener('click', function (e) {
