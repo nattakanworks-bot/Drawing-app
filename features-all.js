@@ -1,4 +1,4 @@
-/*! features-all.js — เชื่อมฟีเจอร์ที่แนะนำทั้งหมดเข้ากับ API ของแอป */
+/*! features-all.js — เชื่อมฟีเจอร์เข้ากับ API ของแอป */
 (function () {
   function $(id) { return document.getElementById(id); }
   function app() { return window.__app || null; }
@@ -23,14 +23,13 @@
       if (a && typeof a.runRead === 'function') { a.runRead(); toast('รัน OCR'); return; }
       if (a && typeof a.ocrCanvas === 'function') { a.ocrCanvas(); toast('OCR canvas'); return; }
     } catch (e) {}
-    toast('OCR: ใช้เครื่องมือในแอป หรือโหมดเรียนรู้');
+    toast('OCR: ใช้เครื่องมือในแอป');
   }
   function doCheck() {
     var a = app();
     try {
-      if (a && typeof a.runChecks === 'function') { a.runChecks(); toast('ตรวจอัตโนมัติ');
-      } else if (a && typeof a.clashCheck === 'function') { a.clashCheck(); toast('Clash check'); }
-      else toast('ยังไม่มีตัวตรวจครบ');
+      if (a && typeof a.runChecks === 'function') { a.runChecks(); toast('ตรวจอัตโนมัติ'); }
+      else toast('Check ยังไม่ครบ');
     } catch (e) { toast('Check: ' + e.message); }
   }
   function doGlb() {
@@ -48,13 +47,12 @@
       else toast('Diff ยังไม่พร้อม');
     } catch (e) { toast('Diff: ' + e.message); }
   }
-  function doLayer() { toast('เลเยอร์: ใช้แผงเครื่องมือ / Layer ในแอป'); }
+  function doLayer() { toast('เลเยอร์: ใช้แผงในแอป'); }
   function doCloud() {
     var a = app();
     try {
-      if (a && typeof a.makeBackup === 'function') { a.makeBackup(); toast('สำรองข้อมูล');
-      } else if (a && a.SAVE) { toast('ใช้ปุ่มเซฟลงเครื่อง');
-      } else toast('Cloud: สำรองในเครื่อง');
+      if (a && typeof a.makeBackup === 'function') { a.makeBackup(); toast('สำรองข้อมูล'); }
+      else toast('Cloud: สำรองในเครื่อง');
     } catch (e) { toast('Cloud: ' + e.message); }
   }
   function doPerf() {
@@ -64,8 +62,8 @@
         a.V3.opts.dims = false;
         a.V3.opts.edges = false;
         if (a.V3fn && a.V3fn.rebuild) a.V3fn.rebuild();
-        toast('ปิด dims/edges เพื่อเบาโหลด');
-      } else toast('โหมดประสิทธิภาพ');
+        toast('ปิด dims/edges');
+      }
     } catch (e) {}
   }
 
@@ -73,12 +71,9 @@
     var btn = e.target.closest && e.target.closest('[data-feat]');
     if (!btn) return;
     var f = btn.getAttribute('data-feat');
-    if (f === 'ar' || f === 'mesh3d' || f === 'symbol' || f === 'fitting' || f === 'iso' || f === 'mto' || f === 'ai' || f === 'pipe' || f === 'fitdims') return;
+    if (f === 'ar' || f === 'mesh3d' || f === 'symbol' || f === 'fitting' || f === 'iso' || f === 'mto' || f === 'ai' || f === 'pipe' || f === 'fitdims' || f === 'v3pipe') return;
     e.preventDefault();
-    var map = {
-      dwg: doDwg, ocr: doOcr, check: doCheck, glb: doGlb,
-      diff: doDiff, layer: doLayer, cloud: doCloud, perf: doPerf
-    };
+    var map = { dwg: doDwg, ocr: doOcr, check: doCheck, glb: doGlb, diff: doDiff, layer: doLayer, cloud: doCloud, perf: doPerf };
     if (map[f]) map[f]();
   }
 
@@ -98,16 +93,14 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
 
-  loadScript('mesh-builder.js?v=20261122i');
-  loadScript('fittings-kb.js?v=20261122i');
-  loadScript('fittings-dims.js?v=20261122i');
-  loadScript('iso-reader.js?v=20261122i');
-  loadScript('mto-engine.js?v=20261122i');
-  loadScript('ai-assist.js?v=20261122i');
-  loadScript('pipe-domain.js?v=20261122i');
+  loadScript('mesh-builder.js?v=20261122j');
+  loadScript('fittings-kb.js?v=20261122j');
+  loadScript('fittings-dims.js?v=20261122j');
+  loadScript('iso-reader.js?v=20261122j');
+  loadScript('mto-engine.js?v=20261122j');
+  loadScript('ai-assist.js?v=20261122j');
+  loadScript('pipe-domain.js?v=20261122j');
+  loadScript('v3-piping.js?v=20261122j');
 
-  window.__featuresAll = {
-    doDwg: doDwg, doOcr: doOcr, doCheck: doCheck, doGlb: doGlb,
-    doDiff: doDiff, doLayer: doLayer, doCloud: doCloud, doPerf: doPerf
-  };
+  window.__featuresAll = { doDwg: doDwg, doOcr: doOcr, doCheck: doCheck, doGlb: doGlb, doDiff: doDiff, doLayer: doLayer, doCloud: doCloud, doPerf: doPerf };
 })();
