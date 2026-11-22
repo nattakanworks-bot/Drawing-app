@@ -83,9 +83,11 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
-  var v = '20261122m';
+  var v = '20261122n';
   ['mesh-builder.js','fittings-kb.js','fittings-dims.js','iso-reader.js','mto-engine.js','ai-assist.js','pipe-domain.js','v3-piping.js','ocr-sheet.js','iso-place3d.js','ready3d.js'].forEach(function (f) {
     loadScript(f + '?v=' + v);
   });
+  // เมนูหมวดโหลดทีหลัง เพื่อรอปุ่มอื่นสร้างก่อน
+  setTimeout(function () { loadScript('feat-menu.js?v=' + v); }, 2200);
   window.__featuresAll = { doDwg: doDwg, doOcr: doOcr, doCheck: doCheck, doGlb: doGlb, doDiff: doDiff, doLayer: doLayer, doCloud: doCloud, doPerf: doPerf };
 })();
