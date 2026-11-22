@@ -74,7 +74,7 @@
     var btn = e.target.closest && e.target.closest('[data-feat]');
     if (!btn) return;
     var f = btn.getAttribute('data-feat');
-    if (f === 'ar' || f === 'mesh3d' || f === 'symbol' || f === 'fitting' || f === 'iso' || f === 'mto' || f === 'ai' || f === 'pipe') return;
+    if (f === 'ar' || f === 'mesh3d' || f === 'symbol' || f === 'fitting' || f === 'iso' || f === 'mto' || f === 'ai' || f === 'pipe' || f === 'fitdims') return;
     e.preventDefault();
     var map = {
       dwg: doDwg, ocr: doOcr, check: doCheck, glb: doGlb,
@@ -99,12 +99,13 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
 
-  loadScript('mesh-builder.js?v=20261122g');
-  loadScript('fittings-kb.js?v=20261122g');
-  loadScript('iso-reader.js?v=20261122g');
-  loadScript('mto-engine.js?v=20261122g');
-  loadScript('ai-assist.js?v=20261122g');
-  loadScript('pipe-domain.js?v=20261122g');
+  loadScript('mesh-builder.js?v=20261122h');
+  loadScript('fittings-kb.js?v=20261122h');
+  loadScript('fittings-dims.js?v=20261122h');
+  loadScript('iso-reader.js?v=20261122h');
+  loadScript('mto-engine.js?v=20261122h');
+  loadScript('ai-assist.js?v=20261122h');
+  loadScript('pipe-domain.js?v=20261122h');
 
   window.__featuresAll = {
     doDwg: doDwg, doOcr: doOcr, doCheck: doCheck, doGlb: doGlb,
