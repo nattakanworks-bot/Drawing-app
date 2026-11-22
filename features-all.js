@@ -66,7 +66,7 @@
     var btn = e.target.closest && e.target.closest('[data-feat]');
     if (!btn) return;
     var f = btn.getAttribute('data-feat');
-    if (['ar','mesh3d','symbol','fitting','iso','mto','ai','pipe','fitdims','v3pipe','ocrsheet','isoplace'].indexOf(f) >= 0) return;
+    if (['ar','mesh3d','symbol','fitting','iso','mto','ai','pipe','fitdims','v3pipe','ocrsheet','isoplace','ready3d'].indexOf(f) >= 0) return;
     e.preventDefault();
     var map = { dwg: doDwg, ocr: doOcr, check: doCheck, glb: doGlb, diff: doDiff, layer: doLayer, cloud: doCloud, perf: doPerf };
     if (map[f]) map[f]();
@@ -83,8 +83,8 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
-  var v = '20261122k';
-  ['mesh-builder.js','fittings-kb.js','fittings-dims.js','iso-reader.js','mto-engine.js','ai-assist.js','pipe-domain.js','v3-piping.js','ocr-sheet.js','iso-place3d.js'].forEach(function (f) {
+  var v = '20261122m';
+  ['mesh-builder.js','fittings-kb.js','fittings-dims.js','iso-reader.js','mto-engine.js','ai-assist.js','pipe-domain.js','v3-piping.js','ocr-sheet.js','iso-place3d.js','ready3d.js'].forEach(function (f) {
     loadScript(f + '?v=' + v);
   });
   window.__featuresAll = { doDwg: doDwg, doOcr: doOcr, doCheck: doCheck, doGlb: doGlb, doDiff: doDiff, doLayer: doLayer, doCloud: doCloud, doPerf: doPerf };
