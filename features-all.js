@@ -58,7 +58,6 @@
     } catch (e) { toast('Cloud: ' + e.message); }
   }
   function doPerf() {
-    toast('โหมดประสิทธิภาพ: ลด dims/edges ใน 3D');
     try {
       var a = app();
       if (a && a.V3 && a.V3.opts) {
@@ -66,7 +65,7 @@
         a.V3.opts.edges = false;
         if (a.V3fn && a.V3fn.rebuild) a.V3fn.rebuild();
         toast('ปิด dims/edges เพื่อเบาโหลด');
-      }
+      } else toast('โหมดประสิทธิภาพ');
     } catch (e) {}
   }
 
@@ -99,13 +98,13 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
 
-  loadScript('mesh-builder.js?v=20261122h');
-  loadScript('fittings-kb.js?v=20261122h');
-  loadScript('fittings-dims.js?v=20261122h');
-  loadScript('iso-reader.js?v=20261122h');
-  loadScript('mto-engine.js?v=20261122h');
-  loadScript('ai-assist.js?v=20261122h');
-  loadScript('pipe-domain.js?v=20261122h');
+  loadScript('mesh-builder.js?v=20261122i');
+  loadScript('fittings-kb.js?v=20261122i');
+  loadScript('fittings-dims.js?v=20261122i');
+  loadScript('iso-reader.js?v=20261122i');
+  loadScript('mto-engine.js?v=20261122i');
+  loadScript('ai-assist.js?v=20261122i');
+  loadScript('pipe-domain.js?v=20261122i');
 
   window.__featuresAll = {
     doDwg: doDwg, doOcr: doOcr, doCheck: doCheck, doGlb: doGlb,
